@@ -15,12 +15,14 @@ class Server:
 		if self.serv_sock is not None:
 			self.serv_sock.close()
 
-	def open(self, host, port=10333):
+	def open(self, host, port):
 		self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.serv_sock.bind((host, port))
 		self.serv_sock.listen(1)
 
+		print("Accepting...")
 		self.clnt_conn, self.clnt_addr = self.serv_sock.accept()
+		print("Connected.")
 
 	def wait_for_image(self):
 		size = 0
@@ -36,8 +38,8 @@ class Server:
 		data = np.fromstring(strdata, dtype="uint8")
 		img = cv2.imdecode(data, 1)
 
-		cv2.imshow("View", img)
-		cv2.waitKey(1)
+		# cv2.imshow("View", img)
+		# cv2.waitKey(1)
 
 		return img
 
