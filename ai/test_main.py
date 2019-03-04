@@ -290,7 +290,10 @@ def rnn_data(images, labels, num_samples, num_step, num_classes):
 	return images_rnn, labels_rnn
 
 def FMD_data_generate_no_label(batch_size):
-	DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/FMD/image"
+	if VM:
+		DATA_DIR = "/home/jylee/datasets/FMD/image"
+	else:
+		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/FMD/image"
 
 	data = []
 
@@ -324,7 +327,11 @@ def train_FMD_encoder():
 	
 	from StackedEncoder import StackedEncoder
 
-	encoder = StackedEncoder("D:/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
+	if VM:
+		encoder = StackedEncoder("/home/jylee/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
+	else:
+		encoder = StackedEncoder("D:/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
+		
 	encoder.build((128, 128, 3), load_weights=False)
 	encoder.fit(FMD_data_generate_no_label, index=[0, 1, 2], epochs=[100, 250, 400])
 	
