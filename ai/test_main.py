@@ -8,7 +8,7 @@ sys.path.append("./features")
 
 from StackedEncoder import StackedEncoder
 
-VM = True
+VM = False
 
 def load_DTD_dataset(samples=5640, label=True):
 	data_path = "D:/datasets/dtd/images"
@@ -467,7 +467,9 @@ def validate_encoder():
 	from Encoder import Encoder
 
 	if VM:
-	encoder = Encoder("D:/ckpts/capstone/encoder_trash1.ckpt", "/gpu:0")
+		encoder = Encoder("/home/jylee/ckpts/capstone/encoder_trash1.ckpt", "/gpu:0")
+	else:
+		encoder = Encoder("D:/ckpts/capstone/encoder_trash1.ckpt", "/gpu:0")
 	encoder.build((128, 128, 3), load_weights=True)
 
 	# encoder.encode(images[0].reshape(1, 128, 128, 3))
