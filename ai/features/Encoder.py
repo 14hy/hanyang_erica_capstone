@@ -44,32 +44,13 @@ class Encoder():
 
 		print("Encoder building completed.")
 
-	def fit(self, X_data, epochs=100):
-		n = X_data.shape[0]
-		num_batch = int(np.ceil(n / self.batch_size))
-
-		print("Training encoder...")
+	def fit(self, X_batch):
 
 		with self.graph.as_default():
-			for t in range(epochs):
-				X_shuffled = self._shuffle(X_data)
 
-				for b in range(num_batch):
-					X_batch = self._next_batch(X_shuffled, b)
-
-					self.sess.run(self.train_op, feed_dict={
-						self.X: X_batch
-					})
-
-				loss = self.sess.run(self.loss, feed_dict={
-					self.X: X_batch
-				})
-				print("Loss at epochs {0}: {1}".format(t + 1, loss))
-
-			print("Encoder training completed.")
-
-			self.saver.save(self.sess, self.ckpt_file)
-			print("Encoder was saved.")
+			self.sess.run(self.train_op, feed_dict={
+				self.X: X_batch
+			})
 
 	def predict(self, X_data):
 		n = X_data.shape[0]
@@ -88,11 +69,15 @@ class Encoder():
 
 		return predictions
 
+	def save(self):
+		with self.graph.as_default():
+			self.saver.save(self.sess, self.ckpt_file)
+
 	def encode(self, X_data):
 		n, h, w, c = X_data.shape
 		num_batch = int(np.ceil(n / self.batch_size))
 
-		encoded = np.zeros((n, int(np.ceil(h / 4)), int(np.ceil(w / 4)), 16))
+		encoded = np.zeros((n, int(np.ceil(h / 4)), int(np.ceil(w / 4)), 32))
 
 		with self.graph.as_default():
 			for b in range(num_batch):
@@ -109,7 +94,7 @@ class Encoder():
 		with self.graph.as_default():
 			self.saver.restore(self.sess, self.ckpt_file)
 
-	def _compute_loss(self, X_data):
+	def compute_loss(self, X_data):
 		n = X_data.shape[0]
 		num_batch = int(np.ceil(n / self.batch_size))
 
@@ -144,23 +129,23 @@ class Encoder():
 
 	def _build_network(self, X, shape):
 		with tf.name_scope("encoder"):
-			encoder = tf.layers.conv2d(X, 16, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(X, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
 
-			encoder = tf.layers.conv2d(encoder, 16, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
-			encoder = tf.layers.conv2d(encoder, 16, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
 
-			encoder = tf.layers.conv2d(encoder, 16, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
-			encoder = tf.layers.conv2d(encoder, 16, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.sigmoid)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.sigmoid)
 
 		with tf.name_scope("decoder"):
-			decoder = tf.layers.conv2d_transpose(encoder, 16, (5, 5), strides=(2, 2), padding="SAME",
+			decoder = tf.layers.conv2d_transpose(encoder, 32, (5, 5), strides=(2, 2), padding="SAME",
 			                                     activation=tf.nn.relu)
-			decoder = tf.layers.conv2d_transpose(decoder, 16, (5, 5), strides=(1, 1), padding="SAME",
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME",
 			                                     activation=tf.nn.relu)
 
-			decoder = tf.layers.conv2d_transpose(decoder, 16, (5, 5), strides=(2, 2), padding="SAME",
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(2, 2), padding="SAME",
 			                                     activation=tf.nn.relu)
-			decoder = tf.layers.conv2d_transpose(decoder, 16, (5, 5), strides=(1, 1), padding="SAME",
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME",
 			                                     activation=tf.nn.relu)
 
 			logits = tf.layers.conv2d_transpose(decoder, shape[-1], (5, 5), strides=(1, 1), padding="SAME",

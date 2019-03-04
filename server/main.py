@@ -37,8 +37,8 @@ def main(args):
 	server = Server()
 	server.open(host, port)
 
-	# ai = AI()
-	# ai.setup(num_step, num_classes)
+	ai = AI()
+	ai.setup(num_step, num_classes)
 
 	# debug
 	t = th.Thread(target=image_show)
@@ -64,10 +64,16 @@ def main(args):
 
 				image = None
 
-			# prediction = ai.classify(image_arr)
-			# print(prediction)
+			result = ""
 
-			# server.send_result(prediction)
+			if ai.detect_trash(image_arr[0]) is False:
+				result += str(0)
+			else:
+				prediction = ai.classify(image_arr)
+				result += str(int(prediction[0, 0]))
+				print(prediction)
+
+			server.send_result(prediction)
 
 	except:
 		print("Exception occurs. Server shutdown.")

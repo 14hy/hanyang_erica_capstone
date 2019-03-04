@@ -8,6 +8,7 @@ sys.path.append("./features")
 
 from StackedEncoder import StackedEncoder
 
+VM = True
 
 def load_DTD_dataset(samples=5640, label=True):
 	data_path = "D:/datasets/dtd/images"
@@ -197,6 +198,80 @@ def load_FMD_dataset(samples=11000, label=True):
 		return images, labels
 	return images
 
+def trash_data_generator(batch_size, dataset_type="train"):
+	if dataset_type == "train":
+		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/train"
+	elif dataset_type == "valid":
+		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/valid"
+	elif dataset_type == "test":
+		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/test"
+	else:
+		print("Invalid dataset type")
+		return
+
+	label_dict = {
+		"can": 0,
+		"extra": 1,
+		"glass": 2,
+		"plastic": 3
+	}
+
+	data = []
+
+	for d in pathlib.Path(DATA_DIR).glob("*"):
+		# print(d)
+		if d.name in label_dict.keys():
+			label = label_dict[d.name]
+
+			for f in d.glob("*.jpg"):
+				data.append((f, label))
+
+	# np.random.shuffle(data)
+	num_batch = int(np.ceil(len(data) / batch_size))
+
+	for b in range(num_batch):
+		start = b * batch_size
+		end = min((b+1) * batch_size, len(data))
+
+		X_batch = np.zeros((end - start, 128, 128, 3))
+		Y_batch = np.zeros((end - start, 1))
+
+		for i in range(start, end):
+			img = cv2.resize(plt.imread(data[i][0]), dsize=(128, 128)).astype(np.float32) / 255
+			lbl = int(data[i][1])
+
+			X_batch[i - start] = img
+			Y_batch[i - start, 0] = lbl
+
+		yield X_batch, Y_batch, num_batch
+
+def rnn_trash_data_generator(num_sample, num_step, dataset_type="train"):
+	BATCH_SIZE = 512
+
+	assert(num_sample % 4 == 0)
+	
+	loader = iter(trash_data_generator(BATCH_SIZE, dataset_type))
+
+	for X_batch, Y_batch, num_batch in loader:
+
+		for i in range(4):
+
+			X_batch_category = X_batch[(Y_batch == i).squeeze()]
+			if len(X_batch_category) < 32:
+				continue
+
+			# print(X_batch_category.shape)
+
+			X_batch_rnn = np.zeros((num_sample, num_step, 128, 128, 3))
+			Y_batch_rnn = np.zeros((num_sample, 4))
+
+			r = np.random.randint(0, len(X_batch_category), size=(num_step * (num_sample)))
+
+			X_batch_rnn[:] = X_batch_category[r].reshape(num_sample, num_step, 128, 128, 3)
+			Y_batch_rnn[:, i] = 1
+
+			yield X_batch_rnn, Y_batch_rnn, num_batch*4
+
 def rnn_data(images, labels, num_samples, num_step, num_classes):
 	images_rnn = np.zeros((num_samples, num_step, 128, 128, 3))
 	labels_rnn = np.zeros((num_samples, num_classes))
@@ -214,26 +289,154 @@ def rnn_data(images, labels, num_samples, num_step, num_classes):
 
 	return images_rnn, labels_rnn
 
-def train_FMD_encoder():
-	images = load_FMD_dataset(label=False)
-	# images = load_trash_dataset()
+def FMD_data_generate_no_label(batch_size):
+	DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/FMD/image"
 
+	data = []
+
+	for f in pathlib.Path(DATA_DIR).glob("*/*/*.jpg"):
+		data.append(f)
+
+	num_batch = int(np.ceil(len(data) / batch_size))
+	np.random.shuffle(data)
+
+	for b in range(num_batch):
+		start = b * batch_size
+		end = min((b+1) * batch_size, len(data))
+
+		X_batch = np.zeros((end - start, 128, 128, 3))
+
+		for i in range(start, end):
+			img = cv2.resize(plt.imread(data[i]), dsize=(128, 128)).astype(np.float32) / 255
+
+			if len(img.shape) == 2:
+				X_batch[i - start, :, :, 0] = img
+				X_batch[i - start, :, :, 1] = img
+				X_batch[i - start, :, :, 2] = img
+			else:
+				X_batch[i - start] = img
+
+		yield X_batch
+
+def train_FMD_encoder():
+	batch_size = 128
+	epochs = 100
+	
 	from StackedEncoder import StackedEncoder
 
-	# encoder = StackedEncoder("encoder_FMD", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
-	encoder = StackedEncoder("encoder_trash", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
+	encoder = StackedEncoder("D:/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
 	encoder.build((128, 128, 3), load_weights=False)
-	encoder.fit(images, [0, 1, 2], epochs=[100, 150, 250])
-	# encoder.encode(images[0].reshape(1, 128, 128, 3))
+	encoder.fit(FMD_data_generate_no_label, index=[0, 1, 2], epochs=[100, 250, 400])
+	
 
+def FMD_data_generate(batch_size, dataset_type="train"):
+	if dataset_type == "train":
+		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/FMD/image/train"
+		if VM:
+			DATA_DIR = "/home/jylee/datasets/FMD/image/train"
+	elif dataset_type == "valid":
+		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/FMD/image/valid"
+		if VM:
+			DATA_DIR = "/home/jylee/datasets/FMD/image/valid"
+	elif dataset_type == "test":
+		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/FMD/image/test"
+		if VM:
+			DATA_DIR = "/home/jylee/datasets/FMD/image/test"
+
+	label_dict = {
+		"fabric": 0,
+		"glass": 1,
+		"leather": 2,
+		"metal": 3,
+		"paper": 4,
+		"plastic": 5
+	}
+
+	data = []
+
+	for d in pathlib.Path(DATA_DIR).glob("*"):
+		if d.name in label_dict.keys():
+			label = label_dict[d.name]
+
+			for f in d.glob("*.jpg"):
+				data.append((f, label))
+
+	num_batch = int(np.ceil(len(data) / batch_size))
+	np.random.shuffle(data)
+
+	for b in range(num_batch):
+		start = b * batch_size
+		end = min((b+1) * batch_size, len(data))
+
+		X_batch = np.zeros((end - start, 128, 128, 3))
+		Y_batch = np.zeros((end - start, len(label_dict)))
+
+		for i in range(start, end):
+			img = cv2.resize(plt.imread(data[i][0]), dsize=(128, 128)).astype(np.float32) / 255
+
+			if len(img.shape) == 2:
+				X_batch[i - start, :, :, 0] = img
+				X_batch[i - start, :, :, 1] = img
+				X_batch[i - start, :, :, 2] = img
+			else:
+				X_batch[i - start] = img
+
+			Y_batch[i - start, data[i][1]] = 1
+
+		yield X_batch, Y_batch
 
 def train_FMD_cnn():
-	images, labels = load_FMD_dataset(label=True)
-	num_classes = labels.shape[1]
+	epochs = 50
+	batch_size = 128
+	num_classes = 6
+	ckpt_file = "D:/ckpts/capstone/feature_cnn.ckpt"
+	
+	from FeatureCNN import FeatureCNN
 
-	for i in range(10):
-		plt.imshow(images[i])
-		plt.show()
+	cnn = FeatureCNN(num_classes, ckpt_file, "/gpu:0", batch_size=batch_size, eta=1e-3)
+	cnn.build((128, 128, 3))
+
+	for e in range(epochs):
+
+		train_loader = iter(FMD_data_generate(batch_size, "train"))
+		
+		train_loss = 0.0
+		cnt = 0
+
+		for X_batch, Y_batch in train_loader:
+			cnn.fit(X_batch, Y_batch, 0.8)
+			train_loss += cnn.compute_loss(X_batch, Y_batch)
+
+			cnt += 1
+
+		train_loss /= cnt
+
+		valid_loader = iter(FMD_data_generate(batch_size, "valid"))
+		valid_acc = 0.0
+		valid_loss = 0.0
+
+		cnt = 0
+
+		for X_batch, Y_batch in valid_loader:
+			valid_loss += cnn.compute_loss(X_batch, Y_batch)
+			valid_acc += cnn.score(X_batch, Y_batch)
+
+			cnt += 1
+
+		valid_loss /= cnt
+		valid_acc /= cnt
+
+		print("Epochs {}/{}".format(e+1, epochs))
+		print("Train loss: {:.6f}".format(train_loss))
+		print("Valid loss: {:.6f}".format(valid_loss))
+		print("Valid acc: {:.6f}".format(valid_acc))
+
+	cnn.save()
+
+	# for i in range(10):
+	# 	plt.imshow(images[i])
+	# 	print(labels[i])
+	# 	plt.show()
 
 	# from FeatureCNN import FeatureCNN
 
@@ -259,14 +462,17 @@ def train_trash_cnn():
 	# print(cnn.transform(images))
 
 def validate_encoder():
-	images = load_trash_dataset2()
+	loader = iter(FMD_data_generate(128))
 
 	from Encoder import Encoder
 
-	encoder = Encoder("ckpts/encoder_trash1.ckpt", "/gpu:0")
+	if VM:
+	encoder = Encoder("D:/ckpts/capstone/encoder_trash1.ckpt", "/gpu:0")
 	encoder.build((128, 128, 3), load_weights=True)
 
 	# encoder.encode(images[0].reshape(1, 128, 128, 3))
+
+	images = next(loader)
 
 	for i in np.random.choice(np.arange(images.shape[0]), replace=False, size=(10,)):
 		plt.imshow(images[i])
@@ -293,8 +499,74 @@ def train_classifier():
 
 	print(clf.score(images_rnn, labels_rnn))
 
-# train_texture_encoder()
+def train_classifier_with_generator():
+	epochs = 100
+	num_step = 8
+	batch_size = 128
+
+	from Classifier import Classifier
+
+	clf = Classifier(num_step, 4, "D:/ckpts/capstone", eta=1e-3)
+	clf.build(num_gpu=2)
+
+	for e in range(epochs):
+		train_loader = iter(rnn_trash_data_generator(batch_size, num_step, "train"))
+		train_loss = 0.0
+
+		cnt = 0
+
+		for X_batch, Y_batch, num_batch in train_loader:
+			clf.fit(X_batch, Y_batch)
+			train_loss += clf.compute_loss(X_batch, Y_batch)
+
+			# print(cnt, num_batch*4)
+			cnt += 1
+
+		train_loss /= cnt
+
+		valid_loader = iter(rnn_trash_data_generator(batch_size, num_step, "valid"))
+		val_loss = 0.0
+		val_acc = 0.0
+
+		cnt = 0
+
+		for X_batch, Y_batch, num_batch in valid_loader:
+			val_loss += clf.compute_loss(X_batch, Y_batch)
+			val_acc += clf.score(X_batch, Y_batch)
+
+			cnt += 1
+
+		val_loss /= cnt
+		val_acc /= cnt
+
+		print("=============")
+		print("Epochs {}/{}".format(e+1, epochs))
+		print("train_loss: {:.6f}".format(train_loss))
+		print("val_loss: {:.6f}".format(val_loss))
+		print("val_acc: {:.6f}".format(val_acc))
+
+	clf.save()
+
+def test():
+	train_loader = iter(rnn_trash_data_generator(128, 8, "train"))
+	img, lbl, _ = next(train_loader)
+	img, lbl, _ = next(train_loader)
+	img, lbl, _ = next(train_loader)
+	img, lbl, _ = next(train_loader)
+
+	for i in range(8):
+		image = img[100, i]
+		plt.imshow(image)
+		print(lbl[10])
+		plt.show()
+
+
+
+train_FMD_encoder()
 # validate_encoder()
 # train_trash_cnn()
+# train_FMD_cnn()
 # train_FMD_encoder()
-train_classifier()
+# train_classifier_with_generator()
+
+# test()

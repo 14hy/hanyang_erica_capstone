@@ -43,38 +43,19 @@ class FeatureCNN():
 
 		print("Feature CNN building completed.")
 
-	def fit(self, X_data, Y_data, keep_prob, epochs=100):
-		n = X_data.shape[0]
-		num_batch = int(np.ceil(n / self.batch_size))
-
-		print("Training feature CNN...")
+	def fit(self, X_batch, Y_batch, keep_prob):
 
 		with self.graph.as_default():
-			for t in range(epochs):
-				X_shuffled, Y_shuffled = self._shuffle(X_data, Y_data)
 
-				for b in range(num_batch):
-					X_batch, Y_batch = self._next_batch(X_shuffled, Y_shuffled, b)
-
-					self.sess.run(self.train_op, feed_dict={
-						self.X: X_batch, self.Y: Y_batch, self.keep_prob: keep_prob
-					})
-
-				loss = self._compute_loss(X_data, Y_data)
-				print("Loss at epochs {0}: {1}".format(t + 1, loss))
-
-			self.saver.save(self.sess, self.ckpt_file)
-			print("Feature CNN was saved.")
-
-		print("Feature CNN training completed.")
+			self.sess.run(self.train_op, feed_dict={
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: keep_prob
+			})
 
 	def transform(self, X_data):
 		n, h, w, c = X_data.shape
 		num_batch = int(np.ceil(n / self.batch_size))
 
 		transformed = np.zeros((n, int(np.ceil(h / 64)), int(np.ceil(w / 64)), 32))
-
-		print("cnnA")
 
 		with self.graph.as_default():
 			for b in range(num_batch):
@@ -85,9 +66,12 @@ class FeatureCNN():
 					                                                                                         self.X: X_batch
 				                                                                                         })
 
-		print("cnnB")
 
 		return transformed
+
+	def save(self):
+		with self.graph.as_default():
+			self.saver.save(self.sess, self.ckpt_file)
 
 	def score(self, X_data, Y_data):
 		n = X_data.shape[0]
@@ -106,22 +90,13 @@ class FeatureCNN():
 
 		return np.mean(scores)
 
-	def _compute_loss(self, X_data, Y_data):
-		n = X_data.shape[0]
-		num_batch = int(np.ceil(n / self.batch_size))
-
-		losses = []
-
-		for b in range(num_batch):
-			X_batch, Y_batch = self._next_batch(X_data, Y_data, b)
-
-			l = self.sess.run(self.loss, feed_dict={
+	def compute_loss(self, X_batch, Y_batch):
+		with self.graph.as_default():
+			loss = self.sess.run(self.loss, feed_dict={
 				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.
 			})
 
-			losses.append(l)
-
-		return np.mean(losses)
+		return np.mean(loss)
 
 	def _shuffle(self, X_data, Y_data=None):
 		n = X_data.shape[0]

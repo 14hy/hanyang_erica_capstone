@@ -8,7 +8,7 @@ class ClassifierRNN():
 		self.num_step = num_step
 		self.num_classes = num_classes
 		self.input_size = input_size
-		self.ckpt_file = "ckpts/" + ckpt_file + ".ckpt"
+		self.ckpt_file = ckpt_file
 		self.eta = eta
 		self.batch_size = batch_size
 		self.device = device
@@ -52,33 +52,25 @@ class ClassifierRNN():
 		with self.graph.as_default():
 			self.saver.restore(self.sess, self.ckpt_file)
 
-	def fit(self, X_data, Y_data, keep_prob, epochs=100, save=False):
-		n = X_data.shape[0]
-		num_batch = int(np.ceil(n / self.batch_size))
+	def fit(self, X_batch, Y_batch, keep_prob):
 
 		with self.graph.as_default():
-			# print("Training classifier RNN...")
 
-			for t in range(epochs):
-				X_shuffled, Y_shuffled = self._shuffle(X_data, Y_data)
+			self.sess.run(self.train_op, feed_dict={
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: keep_prob
+			})
 
-				for b in range(num_batch):
-					X_batch, Y_batch = self._next_batch(X_shuffled, Y_shuffled, b)
+	def compute_loss(self, X_batch, Y_batch):
 
-					self.sess.run(self.train_op, feed_dict={
-						self.X: X_batch, self.Y: Y_batch, self.keep_prob: keep_prob
-					})
+		with self.graph.as_default():
 
-				# loss = self._compute_loss(X_data, Y_data)
-				# print("Loss at epochs {0}: {1}".format(t+1, loss))
+			loss = self.sess.run(self.loss, feed_dict={
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.0
+			})
 
-			# print("Classifier RNN training completed.")
+		return loss
 
-			# if save:
-			# 	self.saver.save(self.sess, self.ckpt_file)
-			# 	print("Classifier RNN was saved.")
-
-	def save_model(self):
+	def save(self):
 		with self.graph.as_default():
 			self.saver.save(self.sess, self.ckpt_file)
 
@@ -161,16 +153,23 @@ class ClassifierRNN():
 
 	def _build_net(self, X, keep_prob, num_classes):
 		with tf.name_scope("rnn_net"):
-			cell = tf.nn.rnn_cell.LSTMCell(64, activation=tf.nn.relu)
-			layer1, state = tf.nn.dynamic_rnn(cell, X, dtype=tf.float32)
-			layer1 = tf.layers.flatten(layer1)
+			cell1 = tf.nn.rnn_cell.LSTMCell(64, activation=tf.nn.tanh, name="LSTM1")
+			layer1, state1 = tf.nn.dynamic_rnn(cell1, X, dtype=tf.float32)
+			layer1 = tf.layers.dropout(layer1, keep_prob)
+			
+			cell2 = tf.nn.rnn_cell.LSTMCell(64, activation=tf.nn.tanh, name="LSTM2")
+			layer2, state2 = tf.nn.dynamic_rnn(cell2, layer1, dtype=tf.float32)
+			layer2 = tf.layers.flatten(layer2)
 
-			layer2 = tf.layers.dense(layer1, 64, activation=tf.nn.relu)
-			layer2 = tf.layers.dropout(layer2, keep_prob)
+			layer3 = tf.layers.dense(layer2, 128, activation=tf.nn.relu)
+			layer3 = tf.layers.dropout(layer3, keep_prob)
+			
+			layer4 = tf.layers.dense(layer3, 32, activation=tf.nn.relu)
+			layer4 = tf.layers.dropout(layer4, keep_prob)
 
-			layer3 = tf.layers.dense(layer2, num_classes, activation=None)
+			layer5 = tf.layers.dense(layer4, num_classes, activation=None)
 
-		return layer3
+		return layer5
 
 	def _loss_function(self, logits, labels):
 		with tf.name_scope("loss"):
