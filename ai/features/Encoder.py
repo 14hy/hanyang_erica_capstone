@@ -142,7 +142,7 @@ class Encoder():
 
 		with tf.name_scope("sparse"):
 			rho_hat = tf.reduce_mean(encoder, axis=0)
-			constraint = self.rho * (tf.log(self.rho) - tf.log(rho_hat)) + (1 - self.rho) * (tf.log(1 - self.rho) - tf.log(1 - rho_hat))
+			constraint = tf.multiply(self.rho, (tf.log(self.rho) - tf.log(rho_hat))) + tf.multiply((1.0 - self.rho), (tf.log(1.0 - self.rho) - tf.log(1.0 - rho_hat)))
 
 		with tf.name_scope("decoder"):
 			decoder = tf.layers.conv2d_transpose(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
