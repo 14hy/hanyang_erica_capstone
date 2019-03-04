@@ -8,7 +8,7 @@ sys.path.append("./features")
 
 from StackedEncoder import StackedEncoder
 
-VM = False
+VM = True
 
 def load_DTD_dataset(samples=5640, label=True):
 	data_path = "D:/datasets/dtd/images"
