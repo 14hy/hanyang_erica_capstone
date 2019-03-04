@@ -8,7 +8,7 @@ sys.path.append("./features")
 
 from StackedEncoder import StackedEncoder
 
-VM = True
+VM = False
 
 def load_DTD_dataset(samples=5640, label=True):
 	data_path = "D:/datasets/dtd/images"
@@ -201,10 +201,16 @@ def load_FMD_dataset(samples=11000, label=True):
 def trash_data_generator(batch_size, dataset_type="train"):
 	if dataset_type == "train":
 		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/train"
+		if VM:
+			DATA_DIR = "/home/jylee/datasets/capstonedata/train"
 	elif dataset_type == "valid":
 		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/valid"
+		if VM:
+			DATA_DIR = "/home/jylee/datasets/capstonedata/valid"
 	elif dataset_type == "test":
 		DATA_DIR = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/test"
+		if VM:
+			DATA_DIR = "/home/jylee/datasets/capstonedata/test"
 	else:
 		print("Invalid dataset type")
 		return
@@ -335,6 +341,19 @@ def train_FMD_encoder():
 	encoder.build((128, 128, 3), load_weights=False)
 	encoder.fit(FMD_data_generate_no_label, index=[0, 1, 2], epochs=[50, 75, 100])
 	
+def train_trash_encoder():
+	batch_size = 128
+	epochs = 100
+	
+	from StackedEncoder import StackedEncoder
+
+	if VM:
+		encoder = StackedEncoder("ckpts/capstone/encoder_trash", "/gpu:0", eta=[1e-3, 3e-3, 5e-3])
+	else:
+		encoder = StackedEncoder("D:/ckpts/capstone/encoder_trash", "/gpu:0", eta=[1e-3, 3e-3, 5e-3])
+		
+	encoder.build((128, 128, 3), load_weights=False)
+	encoder.fit(trash_data_generator, index=[0, 1, 2], epochs=[50, 75, 100])
 
 def FMD_data_generate(batch_size, dataset_type="train"):
 	if dataset_type == "train":
@@ -569,7 +588,8 @@ def test():
 		plt.show()
 
 
-train_FMD_encoder()
+# train_FMD_encoder()
+train_trash_encoder()
 # validate_encoder()
 # train_trash_cnn()
 # train_FMD_cnn()
