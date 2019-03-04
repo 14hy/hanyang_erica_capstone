@@ -328,12 +328,12 @@ def train_FMD_encoder():
 	from StackedEncoder import StackedEncoder
 
 	if VM:
-		encoder = StackedEncoder("/home/jylee/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
+		encoder = StackedEncoder("/home/jylee/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-4, 5e-4, 1e-3])
 	else:
-		encoder = StackedEncoder("D:/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-5, 1e-5, 1e-5])
+		encoder = StackedEncoder("D:/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-4, 5e-4, 1e-3])
 		
 	encoder.build((128, 128, 3), load_weights=False)
-	encoder.fit(FMD_data_generate_no_label, index=[0, 1, 2], epochs=[100, 250, 400])
+	encoder.fit(FMD_data_generate_no_label, index=[0, 1, 2], epochs=[100, 150, 250])
 	
 
 def FMD_data_generate(batch_size, dataset_type="train"):
