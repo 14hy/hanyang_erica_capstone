@@ -33,7 +33,7 @@ class StackedEncoder():
 
 		for i in range(num_stack):
 			enc = Encoder("{}{}.ckpt".format(self.ckpt_file, i+1), self.device,
-			              self.batch_size[i], self.eta[i])
+			              0.01, self.batch_size[i], self.eta[i])
 			enc.build(self.shapes[i], load_weights)
 
 			self.encoders.append(enc)
