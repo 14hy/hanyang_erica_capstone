@@ -11,8 +11,8 @@ HOST = "192.168.137.1"
 PORT = 13333
 NUM_STEP = 8
 
-LEFT_MOTOR = 0 # Move trash box
-RIGHT_MOTOR = 1 # open or close gate
+BOX_MOTOR = 0 # Move trash box
+SUPPORT_MOTOR = 1 # open or close gate
 
 result = None
 ok = True
@@ -29,25 +29,25 @@ def motor_control(result, control_queue):
     if result == 0:
         return
     elif result == 1:
-        control_queue.append(LEFT_MOTOR, 0, 250)
-        control_queue.append(RIGHT_MOTOR, 0, 100)
-        control_queue.append(RIGHT_MOTOR, 1, 100)
-        control_queue.append(LEFT_MOTOR, 1, 250)
+        control_queue.append(BOX_MOTOR, 0, 250)
+        control_queue.append(SUPPORT_MOTOR, 0, 100)
+        control_queue.append(SUPPORT_MOTOR, 1, 100)
+        control_queue.append(BOX_MOTOR, 1, 250)
     elif result == 2:
-        control_queue.append(LEFT_MOTOR, 0, 125)
-        control_queue.append(RIGHT_MOTOR, 0, 100)
-        control_queue.append(RIGHT_MOTOR, 1, 100)
-        control_queue.append(LEFT_MOTOR, 1, 125)
+        control_queue.append(BOX_MOTOR, 0, 125)
+        control_queue.append(SUPPORT_MOTOR, 0, 100)
+        control_queue.append(SUPPORT_MOTOR, 1, 100)
+        control_queue.append(BOX_MOTOR, 1, 125)
     elif result == 3:
-        control_queue.append(LEFT_MOTOR, 1, 125)
-        control_queue.append(RIGHT_MOTOR, 0, 100)
-        control_queue.append(RIGHT_MOTOR, 1, 100)
-        control_queue.append(LEFT_MOTOR, 0, 125)
+        control_queue.append(BOX_MOTOR, 1, 125)
+        control_queue.append(SUPPORT_MOTOR, 0, 100)
+        control_queue.append(SUPPORT_MOTOR, 1, 100)
+        control_queue.append(BOX_MOTOR, 0, 125)
     elif result == 4:
-        control_queue.append(LEFT_MOTOR, 1, 250)
-        control_queue.append(RIGHT_MOTOR, 0, 100)
-        control_queue.append(RIGHT_MOTOR, 1, 100)
-        control_queue.append(LEFT_MOTOR, 0, 250)
+        control_queue.append(BOX_MOTOR, 1, 250)
+        control_queue.append(SUPPORT_MOTOR, 0, 100)
+        control_queue.append(SUPPORT_MOTOR, 1, 100)
+        control_queue.append(BOX_MOTOR, 0, 250)
     else:
         rospy.loginfo("INVALID result " + str(result))
         return
@@ -81,7 +81,7 @@ def main(argv):
                 result = None
             elif len(motor_control_queue) > 0 and motor_pub.is_ready():
                 motor_id, direction, distance = motor_control_queue.pop(0)
-                motor_pub.publish(motor_id,direction, distance)
+                motor_pub.publish(motor_id, direction, distance)
             elif len(motor_control_queue) == 0 and motor_pub.is_ready():
                 cnt = 0
                 wait_for_result = False

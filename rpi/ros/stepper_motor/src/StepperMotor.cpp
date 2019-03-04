@@ -1,10 +1,12 @@
 #include "stepper_motor/StepperMotor.hpp"
 #include "stepper_motor/stepper_motor.hpp"
+#include "std_srvs/SetBool.h"
 #include "wiringPi.h"
 #include <thread>
+#include <vector>
 
 StepperMotor::StepperMotor(ros::NodeHandle _nh)
-	: nh(_nh)
+	: nh(_nh), is_ready(true)
 {
 
 }
@@ -16,11 +18,9 @@ StepperMotor::~StepperMotor()
 
 void StepperMotor::Setup()
 {
-	this->sub_box = nh.subscribe("box_motor_command", 0,
-			&StepperMotor::BoxMotorCallback, this);
-	this->sub_support = nh.subscribe("support_motor_command", 0,
-			&StepperMotor::SupportMotorCallback, this);
-
+	this->sub = nh.subscribe("motor", 2,
+			&StepperMotor::MotorCallback, this);
+	this->serv_clnt = nh.serviceClient<std_srvs::SetBool>("motor_done");
 }
 
 void StepperMotor::Destroy()
@@ -28,42 +28,24 @@ void StepperMotor::Destroy()
 	
 }
 
-void StepperMotor::SupportMotorCallback(const std_msgs::Int32::ConstPtr& ptr)
+void StepperMotor::MotorCallback(const std_msgs::Int32MultiArray::ConstPtr& ptr)
 {
-	int data = ptr->data;
+	if (this->is_ready) {
+		this->is_ready = false;
 
-	ROS_INFO("SUPPORT motor input: %d", data);
+		std::vector<int> data = ptr->data;
 
-	if (data == 0) { // default state
-		GoStep(support_motor, FORWARD, 500);
-	}
-	else { // open the door!
-		GoStep(support_motor, BACKWARD, 500);
-	}
-}
+		ROS_INFO("Motor: %d", data[0]);
+		ROS_INFO("Motor dir: %d", data[1]);
+		ROS_INFO("Motor step: %d", data[2]);
 
-void StepperMotor::BoxMotorCallback(const std_msgs::Int32::ConstPtr& ptr)
-{
-	int data = ptr->data;
+		MotorInfo const* info;
+		if (data[0] == BOX_MOTOR)
+			info = &box_motor;
+		else if (data[0] == SUPPORT_MOTOR)
+			info = &support_motor;
 
-	ROS_INFO("BOX motor input: %d", data);
-
-	switch (data) {
-		case 0: // No category. default state
-			//GoStep(0);
-			break;
-		case 1: // plastic
-			GoStep(box_motor, FORWARD, 1000);
-			break;
-		case 2: // can
-			GoStep(box_motor, FORWARD, 500);
-			break;
-		case 3: // glass
-			GoStep(box_motor, BACKWARD, 500);
-			break;
-		case 4: // extra
-			GoStep(box_motor, BACKWARD, 1000);
-			break;
+		GoStep(info, data[1], data[2]);
 	}
 }
 
@@ -139,4 +121,11 @@ void StepperMotor::Step(class MotorInfo const& info, int steps)
 	}
 
 	digitalWrite(MOTOR_ENABLE, LOW);
+
+	this->is_ready = true;
+
+	std_srvs::SetBool request;
+	request.request.data = true;
+
+	this->serv_clnt.call(request);
 }

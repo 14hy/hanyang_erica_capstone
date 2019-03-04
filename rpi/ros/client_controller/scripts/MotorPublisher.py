@@ -2,6 +2,7 @@ import rospy
 from std_msgs.msg import Int32MultiArray
 from std_srvs.srv import SetBool
 
+
 class MotorPublisher():
 
     def __init__(self):
@@ -10,14 +11,14 @@ class MotorPublisher():
         self.proxy = rospy.Service("motor_done", SetBool, self.motor_done)
         self.ready = True
 
-    def publish(self, motor_id, direction, distance):
+    def publish(self, motor_id, direction, step):
         data = []
 
         data.append(motor_id)
         data.append(direction)
-        data.append(distance)
+        data.append(step)
 
-        rospy.loginfo("Motor: %d, dir: %d, distance: %d" %(motor_id, direction, distance))
+        rospy.loginfo("Motor: %d, dir: %d, distance: %d" %(motor_id, direction, step))
 
         self.pub.publish(data)
         self.ready = False
