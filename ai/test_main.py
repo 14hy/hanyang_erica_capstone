@@ -472,14 +472,14 @@ def train_trash_cnn():
 	# print(cnn.transform(images))
 
 def validate_encoder():
-	loader = iter(FMD_data_generate(128))
+	loader = iter(FMD_data_generate_no_label(128))
 
 	from Encoder import Encoder
 
 	if VM:
-		encoder = Encoder("/home/jylee/ckpts/capstone/encoder_trash1.ckpt", "/gpu:0")
+		encoder = Encoder("ckpts/capstone/encoder_FMD1.ckpt", "/gpu:0")
 	else:
-		encoder = Encoder("D:/ckpts/capstone/encoder_trash1.ckpt", "/gpu:0")
+		encoder = Encoder("ckpts/capstone/encoder_FMD1.ckpt", "/gpu:0")
 	encoder.build((128, 128, 3), load_weights=True)
 
 	# encoder.encode(images[0].reshape(1, 128, 128, 3))
@@ -560,18 +560,13 @@ def train_classifier_with_generator():
 	clf.save()
 
 def test():
-	train_loader = iter(rnn_trash_data_generator(128, 8, "train"))
-	img, lbl, _ = next(train_loader)
-	img, lbl, _ = next(train_loader)
-	img, lbl, _ = next(train_loader)
-	img, lbl, _ = next(train_loader)
+	loader = iter(FMD_data_generate_no_label(128))
+	images = next(loader)
 
-	for i in range(8):
-		image = img[100, i]
+	for i in range(10):
+		image = images[i]
 		plt.imshow(image)
-		print(lbl[10])
 		plt.show()
-
 
 
 train_FMD_encoder()

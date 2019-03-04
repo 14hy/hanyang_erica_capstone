@@ -132,26 +132,26 @@ class Encoder():
 		regularizer = tf.contrib.layers.l2_regularizer(scale=0.1)
 
 		with tf.name_scope("encoder"):
-			encoder = tf.layers.conv2d(X, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
+			encoder = tf.layers.conv2d(X, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
 
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
 
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.sigmoid, kernel_regularizer=regularizer)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.sigmoid)
 
 		with tf.name_scope("sparse"):
 			rho_hat = tf.reduce_mean(encoder, axis=0)
 			constraint = tf.multiply(self.rho, (tf.log(self.rho) - tf.log(rho_hat))) + tf.multiply((1.0 - self.rho), (tf.log(1.0 - self.rho) - tf.log(1.0 - rho_hat)))
 
 		with tf.name_scope("decoder"):
-			decoder = tf.layers.conv2d_transpose(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
-			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
+			decoder = tf.layers.conv2d_transpose(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
 
-			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
-			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu, kernel_regularizer=regularizer)
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
 
-			logits = tf.layers.conv2d_transpose(decoder, shape[-1], (5, 5), strides=(1, 1), padding="SAME", activation=None, kernel_regularizer=regularizer)
+			logits = tf.layers.conv2d_transpose(decoder, shape[-1], (5, 5), strides=(1, 1), padding="SAME", activation=None)
 			decoder = tf.nn.sigmoid(logits)
 
 		return encoder, decoder, logits, constraint
@@ -160,7 +160,7 @@ class Encoder():
 		with tf.name_scope("loss"):
 			# loss = tf.reduce_mean(tf.square(preds - Y))
 			crossentropy = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=Y)
-			loss = 0.6 * tf.reduce_mean(crossentropy) + 0.4 * tf.reduce_mean(tf.square(tf.nn.sigmoid(logits) - Y)) + 3.0 * constraint + tf.losses.get_regularization_loss()
+			loss = 0.6 * tf.reduce_mean(crossentropy) + 0.4 * tf.reduce_mean(tf.square(tf.nn.sigmoid(logits) - Y)) + 3.0 * constraint
 
 		return loss
 
