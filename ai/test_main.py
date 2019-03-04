@@ -328,12 +328,12 @@ def train_FMD_encoder():
 	from StackedEncoder import StackedEncoder
 
 	if VM:
-		encoder = StackedEncoder("/home/jylee/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-4, 5e-4, 1e-3])
+		encoder = StackedEncoder("ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-3, 3e-3, 5e-3])
 	else:
-		encoder = StackedEncoder("D:/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-4, 5e-4, 1e-3])
+		encoder = StackedEncoder("D:/ckpts/capstone/encoder_FMD", "/gpu:0", eta=[1e-3, 3e-3, 5e-3])
 		
 	encoder.build((128, 128, 3), load_weights=False)
-	encoder.fit(FMD_data_generate_no_label, index=[0, 1, 2], epochs=[100, 150, 250])
+	encoder.fit(FMD_data_generate_no_label, index=[0, 1, 2], epochs=[50, 75, 100])
 	
 
 def FMD_data_generate(batch_size, dataset_type="train"):
@@ -396,11 +396,14 @@ def train_FMD_cnn():
 	epochs = 50
 	batch_size = 128
 	num_classes = 6
-	ckpt_file = "D:/ckpts/capstone/feature_cnn.ckpt"
+	if VM:
+		ckpt_file = "ckpts/feature_cnn.ckpt"
+	else:
+		ckpt_file = "D:/ckpts/capstone/feature_cnn.ckpt"
 	
 	from FeatureCNN import FeatureCNN
 
-	cnn = FeatureCNN(num_classes, ckpt_file, "/gpu:0", batch_size=batch_size, eta=1e-3)
+	cnn = FeatureCNN(num_classes, ckpt_file, "/gpu:0", batch_size=batch_size, eta=1e-2)
 	cnn.build((128, 128, 3))
 
 	for e in range(epochs):

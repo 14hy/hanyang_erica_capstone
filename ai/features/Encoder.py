@@ -160,7 +160,7 @@ class Encoder():
 		with tf.name_scope("loss"):
 			# loss = tf.reduce_mean(tf.square(preds - Y))
 			crossentropy = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=Y)
-			loss = 0.6 * tf.reduce_mean(crossentropy) + 0.4 * tf.reduce_mean(tf.square(tf.nn.sigmoid(logits) - Y)) + 0.6 * constraint + tf.losses.get_regularization_loss()
+			loss = 0.6 * tf.reduce_mean(crossentropy) + 0.4 * tf.reduce_mean(tf.square(tf.nn.sigmoid(logits) - Y)) + 3.0 * constraint + tf.losses.get_regularization_loss()
 
 		return loss
 
