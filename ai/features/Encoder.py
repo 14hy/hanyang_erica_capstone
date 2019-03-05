@@ -132,26 +132,28 @@ class Encoder():
 		regularizer = tf.contrib.layers.l2_regularizer(scale=0.1)
 
 		with tf.name_scope("encoder"):
-			encoder = tf.layers.conv2d(X, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(X, 16, (3, 3), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 32, (3, 3), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
 
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 32, (3, 3), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 64, (3, 3), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
 
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
-			encoder = tf.layers.conv2d(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.sigmoid)
+			encoder = tf.layers.conv2d(encoder, 64, (3, 3), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			encoder = tf.layers.conv2d(encoder, 128, (3, 3), strides=(2, 2), padding="SAME", activation=tf.nn.sigmoid)
 
 		with tf.name_scope("sparse"):
 			rho_hat = tf.reduce_mean(encoder, axis=0)
 			constraint = tf.multiply(self.rho, (tf.log(self.rho) - tf.log(rho_hat))) + tf.multiply((1.0 - self.rho), (tf.log(1.0 - self.rho) - tf.log(1.0 - rho_hat)))
 
 		with tf.name_scope("decoder"):
-			decoder = tf.layers.conv2d_transpose(encoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
-			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			decoder = tf.layers.conv2d_transpose(encoder, 64, (3, 3), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
+			decoder = tf.layers.conv2d_transpose(decoder, 64, (3, 3), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
 
-			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
-			decoder = tf.layers.conv2d_transpose(decoder, 32, (5, 5), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (3, 3), strides=(2, 2), padding="SAME", activation=tf.nn.relu)
+			decoder = tf.layers.conv2d_transpose(decoder, 32, (3, 3), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
 
-			logits = tf.layers.conv2d_transpose(decoder, shape[-1], (5, 5), strides=(1, 1), padding="SAME", activation=None)
+			decoder = tf.layers.conv2d_transpose(decoder, 16, (3, 3), strides=(1, 1), padding="SAME", activation=tf.nn.relu)
+			logits = tf.layers.conv2d_transpose(decoder, shape[-1], (3, 3), strides=(1, 1), padding="SAME", activation=None)
 			decoder = tf.nn.sigmoid(logits)
 
 		return encoder, decoder, logits, constraint

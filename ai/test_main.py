@@ -412,7 +412,7 @@ def FMD_data_generate(batch_size, dataset_type="train"):
 		yield X_batch, Y_batch
 
 def train_FMD_cnn():
-	epochs = 50
+	epochs = 150
 	batch_size = 128
 	num_classes = 6
 	if VM:
@@ -485,7 +485,7 @@ def train_trash_cnn():
 
 	cnn = FeatureCNN(num_classes, "feature_cnn", device="/gpu:0", eta=1e-3)
 	cnn.build((128, 128, 3), load_weights=False)
-	cnn.fit(images, labels, 0.7, epochs=50)
+	cnn.fit(images, labels, 0.7, epochs=150)
 
 	print(cnn.score(images, labels))
 	# print(cnn.transform(images))
@@ -589,11 +589,11 @@ def test():
 
 
 # train_FMD_encoder()
-train_trash_encoder()
+# train_trash_encoder()
 # validate_encoder()
 # train_trash_cnn()
 # train_FMD_cnn()
-# train_FMD_encoder()
+train_FMD_encoder()
 # train_classifier_with_generator()
 
 # test()
