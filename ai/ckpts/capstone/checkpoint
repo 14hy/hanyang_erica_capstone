@@ -1,2 +1,2 @@
-model_checkpoint_path: "encoder_FMD3.ckpt"
-all_model_checkpoint_paths: "encoder_FMD3.ckpt"
+model_checkpoint_path: "encoder_trash3.ckpt"
+all_model_checkpoint_paths: "encoder_trash3.ckpt"

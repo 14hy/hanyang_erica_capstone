@@ -8,7 +8,7 @@ sys.path.append("./features")
 
 from StackedEncoder import StackedEncoder
 
-VM = False
+VM = True
 
 def load_DTD_dataset(samples=5640, label=True):
 	data_path = "D:/datasets/dtd/images"
@@ -249,7 +249,7 @@ def trash_data_generator(batch_size, dataset_type="train"):
 			X_batch[i - start] = img
 			Y_batch[i - start, 0] = lbl
 
-		yield X_batch, Y_batch, num_batch
+		yield X_batch#, Y_batch, num_batch
 
 def rnn_trash_data_generator(num_sample, num_step, dataset_type="train"):
 	BATCH_SIZE = 512
