@@ -17,7 +17,7 @@ if VM:
 else:
 	CKPT = "D:/ckpts/capstone/feature_cnn.ckpt"
 
-def train_feature_cnn(VM):
+def train_feature_cnn():
 
 	cnn = FeatureCNN(ETA, CKPT, NUM_CLASSES, "/gpu:0")
 	cnn.build()
@@ -66,3 +66,6 @@ def train_feature_cnn(VM):
 		print(f"Valid acc: {val_acc:.6f}")
 
 	cnn.save()
+
+if __name__ == "__main__":
+	train_feature_cnn()
