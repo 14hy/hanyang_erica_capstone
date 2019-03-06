@@ -73,20 +73,28 @@ def train_trash_cnn(keep_prob, gpu=0):
 
 	from features.FeatureCNN import FeatureCNN
 
-	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-3)
+	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-2)
 	cnn.build((128, 128, 3))
 
 	for e in range(epochs):
 		train_loader = iter(trash_data_generator(VM, batch_size, "train"))
+
+		for X_batch, Y_batch, _ in train_loader:
+			cnn.fit(X_batch, Y_batch, keep_prob)
+
+		train_loader = iter(trash_data_generator(VM, batch_size, "train"))
 		train_loss = 0.0
+		train_acc = 0.0
 
 		cnt = 0
 		for X_batch, Y_batch, _ in train_loader:
-			cnn.fit(X_batch, Y_batch, keep_prob)
 			train_loss += cnn.compute_loss(X_batch, Y_batch)
+			train_acc += cnn.score(X_batch, Y_batch)
 			cnt += 1
 
+
 		train_loss /= cnt
+		train_acc /= cnt
 
 		val_loader = iter(trash_data_generator(VM, batch_size, "valid"))
 		val_loss = 0.0
@@ -104,6 +112,7 @@ def train_trash_cnn(keep_prob, gpu=0):
 		print("=== trash ===")
 		print(f"Epoch {e+1}/{epochs}")
 		print(f"Train loss: {train_loss:.6f}")
+		print(f"Train acc: {train_acc:.6f}")
 		print(f"Val loss: {val_loss:.6f}")
 		print(f"Val acc: {val_acc:.6f}")
 
