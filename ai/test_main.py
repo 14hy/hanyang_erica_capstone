@@ -249,7 +249,7 @@ def trash_data_generator(batch_size, dataset_type="train"):
 			X_batch[i - start] = img
 			Y_batch[i - start, 0] = lbl
 
-		yield X_batch#, Y_batch, num_batch
+		yield X_batch, Y_batch, num_batch
 
 def rnn_trash_data_generator(num_sample, num_step, dataset_type="train"):
 	BATCH_SIZE = 512
@@ -537,8 +537,11 @@ def train_classifier_with_generator():
 
 	from Classifier import Classifier
 
-	clf = Classifier(num_step, 4, "D:/ckpts/capstone", eta=1e-3)
-	clf.build(num_gpu=2)
+	if VM:
+		clf = Classifier(num_step, 4, "ckpts/capstone", eta=1e-4)
+	else:
+		clf = Classifier(num_step, 4, "D:/ckpts/capstone", eta=1e-4)
+	clf.build(num_gpu=1)
 
 	for e in range(epochs):
 		train_loader = iter(rnn_trash_data_generator(batch_size, num_step, "train"))
@@ -589,11 +592,11 @@ def test():
 
 
 # train_FMD_encoder()
-train_trash_encoder()
+# train_trash_encoder()
 # validate_encoder()
 # train_trash_cnn()
 # train_FMD_cnn()
-train_FMD_encoder()
-# train_classifier_with_generator()
+# train_FMD_encoder()
+train_classifier_with_generator()
 
 # test()
