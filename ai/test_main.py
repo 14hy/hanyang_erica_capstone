@@ -240,14 +240,14 @@ def trash_data_generator(batch_size, dataset_type="train"):
 		end = min((b+1) * batch_size, len(data))
 
 		X_batch = np.zeros((end - start, 128, 128, 3))
-		Y_batch = np.zeros((end - start, 1))
+		Y_batch = np.zeros((end - start, len(label_dict)))
 
 		for i in range(start, end):
 			img = cv2.resize(plt.imread(data[i][0]), dsize=(128, 128)).astype(np.float32) / 255
 			lbl = int(data[i][1])
 
 			X_batch[i - start] = img
-			Y_batch[i - start, 0] = lbl
+			Y_batch[i - start, lbl] = 1
 
 		yield X_batch, Y_batch, num_batch
 
@@ -480,7 +480,7 @@ def train_FMD_cnn(gpu=0):
 def train_trash_cnn(gpu=0):
 	epochs = 150
 	batch_size = 128
-	num_classes = 6
+	num_classes = 4
 	if VM:
 		ckpt_file = "ckpts/capstone/feature_cnn.ckpt"
 	else:
