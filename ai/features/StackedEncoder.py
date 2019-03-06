@@ -23,12 +23,12 @@ class StackedEncoder():
 
 		h = int(np.ceil(h / 4))
 		w = int(np.ceil(w / 4))
-		c = 32
+		c = 128
 		self.shapes.append((h, w, c))
 
 		h = int(np.ceil(h / 4))
 		w = int(np.ceil(w / 4))
-		c = 32
+		c = 128
 		self.shapes.append((h, w, c))
 
 		for i in range(num_stack):

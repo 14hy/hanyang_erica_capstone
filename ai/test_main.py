@@ -589,7 +589,7 @@ def test():
 
 
 # train_FMD_encoder()
-# train_trash_encoder()
+train_trash_encoder()
 # validate_encoder()
 # train_trash_cnn()
 # train_FMD_cnn()

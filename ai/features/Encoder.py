@@ -78,7 +78,7 @@ class Encoder():
 		n, h, w, c = X_data.shape
 		num_batch = int(np.ceil(n / self.batch_size))
 
-		encoded = np.zeros((n, int(np.ceil(h / 4)), int(np.ceil(w / 4)), 32))
+		encoded = np.zeros((n, int(np.ceil(h / 4)), int(np.ceil(w / 4)), 128))
 
 		with self.graph.as_default():
 			for b in range(num_batch):
@@ -162,7 +162,7 @@ class Encoder():
 		with tf.name_scope("loss"):
 			# loss = tf.reduce_mean(tf.square(preds - Y))
 			crossentropy = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=Y)
-			loss = 0.6 * tf.reduce_mean(crossentropy) + 0.4 * tf.reduce_mean(tf.square(tf.nn.sigmoid(logits) - Y)) + 3.0 * constraint
+			loss = 1.0 * tf.reduce_mean(crossentropy) + 0.4 * tf.reduce_mean(tf.square(tf.nn.sigmoid(logits) - Y)) + 3.0 * constraint
 
 		return loss
 
