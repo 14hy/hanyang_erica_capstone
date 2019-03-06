@@ -8,7 +8,7 @@ from datautils import trash_data_generator, FMD_data_generate
 VM = True
 
 
-def train_FMD_cnn(keep_prob, gpu=0):
+def train_FMD_cnn(drop_rate, gpu=0):
 	epochs = 150
 	batch_size = 128
 	num_classes = 6
@@ -30,7 +30,7 @@ def train_FMD_cnn(keep_prob, gpu=0):
 		cnt = 0
 
 		for X_batch, Y_batch in train_loader:
-			cnn.fit(X_batch, Y_batch, keep_prob)
+			cnn.fit(X_batch, Y_batch, drop_rate)
 			train_loss += cnn.compute_loss(X_batch, Y_batch)
 
 			cnt += 1
@@ -60,11 +60,11 @@ def train_FMD_cnn(keep_prob, gpu=0):
 
 	cnn.save()
 
-def train_trash_cnn(keep_prob, gpu=0):
+def train_trash_cnn(drop_rate, gpu=0):
 	epochs = 150
 	batch_size = 128
 	num_classes = 4
-	keep_prob = 0.5
+	drop_rate = 0.5
 
 	if VM:
 		ckpt_file = "ckpts/capstone/feature_cnn.ckpt"
@@ -80,7 +80,7 @@ def train_trash_cnn(keep_prob, gpu=0):
 		train_loader = iter(trash_data_generator(VM, batch_size, "train"))
 
 		for X_batch, Y_batch, _ in train_loader:
-			cnn.fit(X_batch, Y_batch, keep_prob)
+			cnn.fit(X_batch, Y_batch, drop_rate)
 
 		train_loader = iter(trash_data_generator(VM, batch_size, "train"))
 		train_loss = 0.0
@@ -119,5 +119,11 @@ def train_trash_cnn(keep_prob, gpu=0):
 	cnn.save()
 
 if __name__ == "__main__":
-	# train_FMD_cnn(0.6, gpu=0)
-	train_trash_cnn(0.6, gpu=0)
+	t1 = th.Thread(target=train_FMD_cnn, args=(0.3, 0))
+	t2 = th.Thread(target=train_trash_cnn, args=(0.3, 1))
+
+	t1.start()
+	t2.start()
+
+	t1.join()
+	t2.join()
