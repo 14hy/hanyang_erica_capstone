@@ -7,7 +7,7 @@ from datautils import trash_data_generator
 
 VM = True
 BATCH_SIZE = 128
-DROP_RATE = 0.3
+KEEP_PROB = 0.7
 EPOCHS = 50
 ETA = 1e-3
 NUM_CLASSES = 4
@@ -27,7 +27,7 @@ def train_feature_cnn():
 
 		# train
 		for X_batch, Y_batch, _ in train_loader:
-			cnn.step(X_batch, Y_batch, DROP_RATE)
+			cnn.step(X_batch, Y_batch, KEEP_PROB)
 
 		# compute train loss ans accuracy
 		train_loss = 0.0

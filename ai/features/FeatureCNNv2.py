@@ -24,10 +24,10 @@ class FeatureCNN():
 
 		with tf.device(self.device):
 			with self.graph.as_default():
-				self.X, self.Y, self.drop_rate = self._init_placeholder()
+				self.X, self.Y, self.keep_prob = self._init_placeholder()
 				params = self._init_params()
 
-				self.feature_maps, logits = self._build_net(self.X, self.drop_rate, params)
+				self.feature_maps, logits = self._build_net(self.X, self.keep_prob, params)
 
 				self.loss = self._loss_function(logits, self.Y)
 				self.accuracy = self._accuracy(logits, self.Y)
@@ -51,16 +51,16 @@ class FeatureCNN():
 		with self.graph.as_default():
 			self.saver.save(self.sess, self.ckpt)
 
-	def step(self, X_batch, Y_batch, drop_rate):
+	def step(self, X_batch, Y_batch, keep_prob):
 		with self.graph.as_default():
 			self.sess.run(self.train_op, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.drop_rate: drop_rate
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: keep_prob
 			})
 
 	def compute_loss(self, X_batch, Y_batch):
 		with self.graph.as_default():
 			loss = self.sess.run(self.loss, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.drop_rate: 1.0
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.0
 			})
 
 		return loss
@@ -68,7 +68,7 @@ class FeatureCNN():
 	def score(self, X_batch, Y_batch):
 		with self.graph.as_default():
 			acc = self.sess.run(self.accuracy, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.drop_rate: 1.0
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.0
 			})
 
 		return acc
@@ -76,7 +76,7 @@ class FeatureCNN():
 	def transform(self, X_batch):
 		with self.graph.as_default():
 			transformed = self.sess.run(self.feature_maps, feed_dict={
-				self.X: X_batch, self.drop_rate: 1.0
+				self.X: X_batch, self.keep_prob: 1.0
 			})
 
 		return transformed
@@ -85,9 +85,9 @@ class FeatureCNN():
 		with tf.name_scope("in"):
 			X = tf.placeholder(tf.float32, shape=(None, 128, 128, 3), name="X")
 			Y = tf.placeholder(tf.float32, shape=(None, self.num_classes), name="Y")
-			drop_rate = tf.placeholder(tf.float32, shape=(), name="drop_rate")
+			keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
 
-		return X, Y, drop_rate
+		return X, Y, keep_prob
 
 	def _loss_function(self, logits, labels):
 		with tf.name_scope("loss"):
@@ -162,7 +162,7 @@ class FeatureCNN():
 
 		return params
 
-	def _build_net(self, X, drop_rate, params):
+	def _build_net(self, X, keep_prob, params):
 		with tf.name_scope("net1"):
 			layer1_1 = tf.nn.conv2d(X, params["1/W1"], strides=(1, 1, 1, 1), padding="SAME") + params["1/b1"]
 			layer1_1 = tf.nn.batch_normalization(layer1_1, params["1/batch_norm1/mean"], params["1/batch_norm1/var"], None, None, 1e-7)
@@ -212,11 +212,11 @@ class FeatureCNN():
 			layer5 = tf.concat([layer4_1, layer4_2], axis=1)
 			layer5 = tf.matmul(layer5, params["W5"]) + params["b5"]
 			layer5 = tf.nn.sigmoid(layer5)
-			layer5 = tf.nn.dropout(layer5, rate=drop_rate)
+			layer5 = tf.nn.dropout(layer5, keep_prob)
 
 			layer6 = tf.matmul(layer5, params["W6"]) + params["b6"]
 			layer6 = tf.nn.relu(layer6)
-			layer6 = tf.nn.dropout(layer6, rate=drop_rate)
+			layer6 = tf.nn.dropout(layer6, keep_prob)
 
 			layer7 = tf.matmul(layer6, params["W7"]) + params["b7"]
 			
