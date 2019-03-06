@@ -131,7 +131,7 @@ class FeatureCNN():
 
 			layer2 = tf.layers.max_pooling2d(layer1, (2, 2), strides=(2, 2), padding="SAME") # 64
 			
-			layer3 = tf.layers.conv2d(layer2, 32, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
+			layer3 = tf.layers.conv2d(layer2, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer3 = tf.layers.batch_normalization(layer3)
 			layer3 = tf.nn.relu(layer3)
 
@@ -143,7 +143,7 @@ class FeatureCNN():
 
 			layer6 = tf.layers.max_pooling2d(layer5, (2, 2), strides=(2, 2), padding="SAME") # 16
 			
-			layer7 = tf.layers.conv2d(layer6, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
+			layer7 = tf.layers.conv2d(layer6, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer7 = tf.layers.batch_normalization(layer7)
 			layer7 = tf.nn.relu(layer7)
 
@@ -152,24 +152,20 @@ class FeatureCNN():
 			layer9 = tf.layers.conv2d(layer8, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer9 = tf.layers.batch_normalization(layer9)
 			layer9 = tf.nn.relu(layer9)
+
+			layer10 = tf.layers.max_pooling2d(layer9, (2, 2), strides=(2, 2), padding="SAME") # 4
+
+			layer11 = tf.layers.flatten(layer10)
+
+			layer12 = tf.layers.dense(layer11, 256, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
+			layer12 = tf.layers.dropout(layer12, keep_prob)
 			
-			layer10 = tf.layers.conv2d(layer9, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
-			layer10 = tf.layers.batch_normalization(layer10)
-			layer10 = tf.nn.relu(layer10)
-
-			layer11 = tf.layers.max_pooling2d(layer10, (2, 2), strides=(2, 2), padding="SAME") # 4
-
-			layer12 = tf.layers.flatten(layer11)
-
-			layer13 = tf.layers.dense(layer12, 512, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
+			layer13 = tf.layers.dense(layer12, 64, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
 			layer13 = tf.layers.dropout(layer13, keep_prob)
-			
-			layer14 = tf.layers.dense(layer13, 128, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
-			layer14 = tf.layers.dropout(layer14, keep_prob)
 
-			layer15 = tf.layers.dense(layer14, self.num_classes, activation=None)#, kernel_regularizer=regularizer)
+			layer14 = tf.layers.dense(layer13, self.num_classes, activation=None)#, kernel_regularizer=regularizer)
 
-		return layer11, layer15
+		return layer10, layer14
 
 	def _loss_function(self, pred, Y):
 		with tf.name_scope("loss"):
