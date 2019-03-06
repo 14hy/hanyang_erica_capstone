@@ -125,35 +125,35 @@ class FeatureCNN():
 		regularizer = tf.contrib.layers.l2_regularizer(scale=0.1)
 
 		with tf.name_scope("feature_cnn"):
-			layer1 = tf.layers.conv2d(X, 32, (3, 3), strides=(1, 1), padding="SAME", activation=None, kernel_regularizer=regularizer)
+			layer1 = tf.layers.conv2d(X, 32, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer1 = tf.layers.batch_normalization(layer1)
 			layer1 = tf.nn.relu(layer1)
 
 			layer2 = tf.layers.max_pooling2d(layer1, (2, 2), strides=(2, 2), padding="SAME") # 64
 			
-			layer3 = tf.layers.conv2d(layer2, 32, (3, 3), strides=(1, 1), padding="SAME", activation=None, kernel_regularizer=regularizer)
+			layer3 = tf.layers.conv2d(layer2, 32, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer3 = tf.layers.batch_normalization(layer3)
 			layer3 = tf.nn.relu(layer3)
 
 			layer4 = tf.layers.max_pooling2d(layer3, (2, 2), strides=(2, 2), padding="SAME") # 32
 
-			layer5 = tf.layers.conv2d(layer4, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None, kernel_regularizer=regularizer)
+			layer5 = tf.layers.conv2d(layer4, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer5 = tf.layers.batch_normalization(layer5)
 			layer5 = tf.nn.relu(layer5)
 
 			layer6 = tf.layers.max_pooling2d(layer5, (2, 2), strides=(2, 2), padding="SAME") # 16
 			
-			layer7 = tf.layers.conv2d(layer6, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None, kernel_regularizer=regularizer)
+			layer7 = tf.layers.conv2d(layer6, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer7 = tf.layers.batch_normalization(layer7)
 			layer7 = tf.nn.relu(layer7)
 
 			layer8 = tf.layers.max_pooling2d(layer7, (2, 2), strides=(2, 2), padding="SAME") # 8
 
-			layer9 = tf.layers.conv2d(layer8, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None, kernel_regularizer=regularizer)
+			layer9 = tf.layers.conv2d(layer8, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer9 = tf.layers.batch_normalization(layer9)
 			layer9 = tf.nn.relu(layer9)
 			
-			layer10 = tf.layers.conv2d(layer9, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None, kernel_regularizer=regularizer)
+			layer10 = tf.layers.conv2d(layer9, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
 			layer10 = tf.layers.batch_normalization(layer10)
 			layer10 = tf.nn.relu(layer10)
 
@@ -161,13 +161,13 @@ class FeatureCNN():
 
 			layer12 = tf.layers.flatten(layer11)
 
-			layer13 = tf.layers.dense(layer12, 512, activation=tf.nn.relu, kernel_regularizer=regularizer)
+			layer13 = tf.layers.dense(layer12, 512, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
 			layer13 = tf.layers.dropout(layer13, keep_prob)
 			
-			layer14 = tf.layers.dense(layer13, 128, activation=tf.nn.relu, kernel_regularizer=regularizer)
+			layer14 = tf.layers.dense(layer13, 128, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
 			layer14 = tf.layers.dropout(layer14, keep_prob)
 
-			layer15 = tf.layers.dense(layer14, self.num_classes, activation=None, kernel_regularizer=regularizer)
+			layer15 = tf.layers.dense(layer14, self.num_classes, activation=None)#, kernel_regularizer=regularizer)
 
 		return layer11, layer15
 

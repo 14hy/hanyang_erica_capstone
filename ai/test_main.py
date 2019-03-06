@@ -240,14 +240,14 @@ def trash_data_generator(batch_size, dataset_type="train"):
 		end = min((b+1) * batch_size, len(data))
 
 		X_batch = np.zeros((end - start, 128, 128, 3))
-		Y_batch = np.zeros((end - start, 1))
+		Y_batch = np.zeros((end - start, len(label_dict)))
 
 		for i in range(start, end):
 			img = cv2.resize(plt.imread(data[i][0]), dsize=(128, 128)).astype(np.float32) / 255
 			lbl = int(data[i][1])
 
 			X_batch[i - start] = img
-			Y_batch[i - start, 0] = lbl
+			Y_batch[i - start, lbl] = 1
 
 		yield X_batch, Y_batch, num_batch
 
@@ -422,7 +422,7 @@ def train_FMD_cnn(gpu=0):
 	
 	from FeatureCNN import FeatureCNN
 
-	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-2)
+	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-3)
 	cnn.build((128, 128, 3))
 
 	for e in range(epochs):
@@ -455,6 +455,7 @@ def train_FMD_cnn(gpu=0):
 		valid_loss /= cnt
 		valid_acc /= cnt
 
+		print("=== FMD  ===")
 		print("Epochs {}/{}".format(e+1, epochs))
 		print("Train loss: {:.6f}".format(train_loss))
 		print("Valid loss: {:.6f}".format(valid_loss))
@@ -480,7 +481,7 @@ def train_FMD_cnn(gpu=0):
 def train_trash_cnn(gpu=0):
 	epochs = 150
 	batch_size = 128
-	num_classes = 6
+	num_classes = 4
 	if VM:
 		ckpt_file = "ckpts/capstone/feature_cnn.ckpt"
 	else:
@@ -488,7 +489,7 @@ def train_trash_cnn(gpu=0):
 
 	from FeatureCNN import FeatureCNN
 
-	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-2)
+	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-3)
 	cnn.build((128, 128, 3))
 
 	for e in range(epochs):
@@ -516,6 +517,7 @@ def train_trash_cnn(gpu=0):
 		val_loss /= cnt
 		val_acc /= cnt
 
+		print("=== trash ===")
 		print(f"Epoch {e+1}/{epochs}")
 		print(f"Train loss: {train_loss:.6f}")
 		print(f"Val loss: {val_loss:.6f}")
