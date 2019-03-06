@@ -11,7 +11,7 @@ class FeatureCNN():
 		self.num_classes = num_classes
 		self.device = device
 		self.batch_size = batch_size
-		self.ckpt_file = "/home/jylee/capstone/ckpts/" + ckpt_file + ".ckpt"
+		self.ckpt_file = ckpt_file
 		self.saver = None
 
 	def __del__(self):

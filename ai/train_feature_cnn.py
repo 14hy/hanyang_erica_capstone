@@ -110,5 +110,5 @@ def train_trash_cnn(keep_prob, gpu=0):
 	cnn.save()
 
 if __name__ == "__main__":
-	train_FMD_cnn(0.6, gpu=0)
+	# train_FMD_cnn(0.6, gpu=0)
 	train_trash_cnn(0.6, gpu=0)
