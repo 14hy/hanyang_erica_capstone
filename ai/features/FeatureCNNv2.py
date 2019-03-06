@@ -36,9 +36,9 @@ class FeatureCNN():
 
 				self.sess = tf.Session()
 				self.sess.run(tf.global_variables_initializer())
-
-			with tf.device("/cpu:0"):
-				self.saver = tf.train.Saver()
+	
+				with tf.device("/cpu:0"):
+					self.saver = tf.train.Saver()
 
 		print("Feature CNN was built.")
 
@@ -59,15 +59,15 @@ class FeatureCNN():
 	def compute_loss(self, X_batch, Y_batch):
 		with self.graph.as_default():
 			loss = self.sess.run(self.loss, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.0
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 0.0
 			})
 
 		return loss
 
-	def accuracy(self, X_batch, Y_batch):
+	def score(self, X_batch, Y_batch):
 		with self.graph.as_default():
 			acc = self.sess.run(self.accuracy, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.0
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 0.0
 			})
 
 		return acc
@@ -75,7 +75,7 @@ class FeatureCNN():
 	def transform(self, X_batch):
 		with self.graph.as_default():
 			transformed = self.sess.run(self.feature_maps, feed_dict={
-				self.X: X_batch, self.keep_prob: 1.0
+				self.X: X_batch, self.keep_prob: 0.0
 			})
 
 		return transformed
@@ -155,7 +155,10 @@ class FeatureCNN():
 			layer8_2 = tf.layers.max_pooling2d(layer7_2, (2, 2), strides=(2, 2), padding="SAME")
 
 		with tf.name_scope("merged"):
-			layer9 = tf.concat([layer8_1, layer8_2], axis=0)
+			layer8_1 = tf.layers.flatten(layer8_1)
+			layer8_2 = tf.layers.flatten(layer8_2)
+
+			layer9 = tf.concat([layer8_1, layer8_2], axis=1)
 			layer9 = tf.layers.dropout(layer9, keep_prob)
 
 			layer10 = tf.layers.dense(layer9, 512, activation=tf.nn.sigmoid)

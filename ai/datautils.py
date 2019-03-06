@@ -33,6 +33,7 @@ def trash_data_generator(VM, batch_size, dataset_type="train"):
 	for d in pathlib.Path(DATA_DIR).glob("*"):
 		# print(d)
 		if d.name in label_dict.keys():
+#print(d.name)
 			label = label_dict[d.name]
 
 			for f in d.glob("*.jpg"):
@@ -46,7 +47,7 @@ def trash_data_generator(VM, batch_size, dataset_type="train"):
 		end = min((b+1) * batch_size, len(data))
 
 		X_batch = np.zeros((end - start, 128, 128, 3))
-		Y_batch = np.zeros((end - start, len(label_dict)))
+		Y_batch = np.zeros((end - start, len(label_dict.keys())))
 
 		for i in range(start, end):
 			img = cv2.resize(plt.imread(data[i][0]), dsize=(128, 128)).astype(np.float32) / 255

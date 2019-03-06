@@ -170,7 +170,7 @@ class FeatureCNN():
 	def _loss_function(self, pred, Y):
 		with tf.name_scope("loss"):
 			crossentropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=pred, labels=Y)
-			loss = tf.reduce_mean(crossentropy) + tf.losses.get_regularization_loss()
+			loss = tf.reduce_mean(crossentropy)# + tf.losses.get_regularization_loss()
 
 		return loss
 
