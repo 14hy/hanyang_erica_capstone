@@ -111,47 +111,47 @@ class FeatureCNN():
 			with tf.name_scope("conv1"):
 				params["1/W1"] = tf.Variable(tf.random_normal((3, 3, 3, 32)), dtype=tf.float32, name="W1")
 				params["1/b1"] = tf.Variable(tf.random_normal((1, 1, 1, 32)), dtype=tf.float32, name="b1")
-				params["1/batch_norm1/mean"] = tf.Variable(tf.random_normal(128, 128, 32), dtype=tf.float32, name="batch_norm_mean1")
-				params["1/batch_norm1/var"] = tf.Variable(tf.random_normal(128, 128, 32), dtype=tf.float32, name="batch_norm_var1")
+				params["1/batch_norm1/mean"] = tf.Variable(tf.random_normal((1, 128, 128, 32)), dtype=tf.float32, name="batch_norm_mean1")
+				params["1/batch_norm1/var"] = tf.Variable(tf.random_normal((1, 128, 128, 32)), dtype=tf.float32, name="batch_norm_var1")
 
 				params["1/W2"] = tf.Variable(tf.random_normal((3, 3, 32, 32)), dtype=tf.float32, name="W2")
 				params["1/b2"] = tf.Variable(tf.random_normal((1, 1, 1, 32)), dtype=tf.float32, name="b2")
-				params["1/batch_norm2/mean"] = tf.Variable(tf.random_normal(64, 64, 32), dtype=tf.float32, name="batch_norm_mean2")
-				params["1/batch_norm2/var"] = tf.Variable(tf.random_normal(64, 64, 32), dtype=tf.float32, name="batch_norm_var2")
+				params["1/batch_norm2/mean"] = tf.Variable(tf.random_normal((1, 64, 64, 32)), dtype=tf.float32, name="batch_norm_mean2")
+				params["1/batch_norm2/var"] = tf.Variable(tf.random_normal((1, 64, 64, 32)), dtype=tf.float32, name="batch_norm_var2")
 				
 				params["1/W3"] = tf.Variable(tf.random_normal((3, 3, 32, 64)), dtype=tf.float32, name="W3")
 				params["1/b3"] = tf.Variable(tf.random_normal((1, 1, 1, 64)), dtype=tf.float32, name="b3")
-				params["1/batch_norm3/mean"] = tf.Variable(tf.random_normal(32, 32, 64), dtype=tf.float32, name="batch_norm_mean3")
-				params["1/batch_norm3/var"] = tf.Variable(tf.random_normal(32, 32, 32), dtype=tf.float32, name="batch_norm_var3")
+				params["1/batch_norm3/mean"] = tf.Variable(tf.random_normal((1, 32, 32, 64)), dtype=tf.float32, name="batch_norm_mean3")
+				params["1/batch_norm3/var"] = tf.Variable(tf.random_normal((1, 32, 32, 64)), dtype=tf.float32, name="batch_norm_var3")
 				
 				params["1/W4"] = tf.Variable(tf.random_normal((3, 3, 64, 64)), dtype=tf.float32, name="W4")
 				params["1/b4"] = tf.Variable(tf.random_normal((1, 1, 1, 64)), dtype=tf.float32, name="b4")
-				params["1/batch_norm4/mean"] = tf.Variable(tf.random_normal(16, 16, 64), dtype=tf.float32, name="batch_norm_mean4")
-				params["1/batch_norm4/var"] = tf.Variable(tf.random_normal(16, 16, 32), dtype=tf.float32, name="batch_norm_var4")
+				params["1/batch_norm4/mean"] = tf.Variable(tf.random_normal((1, 16, 16, 64)), dtype=tf.float32, name="batch_norm_mean4")
+				params["1/batch_norm4/var"] = tf.Variable(tf.random_normal((1, 16, 16, 64)), dtype=tf.float32, name="batch_norm_var4")
 
 			with tf.name_scope("conv2"):
 				params["2/W1"] = tf.Variable(tf.random_normal((5, 5, 3, 32)), dtype=tf.float32, name="W1")
 				params["2/b1"] = tf.Variable(tf.random_normal((1, 1, 1, 32)), dtype=tf.float32, name="b1")
-				params["2/batch_norm1/mean"] = tf.Variable(tf.random_normal(128, 128, 32), dtype=tf.float32, name="batch_norm_mean1")
-				params["2/batch_norm1/var"] = tf.Variable(tf.random_normal(128, 128, 32), dtype=tf.float32, name="batch_norm_var1")
+				params["2/batch_norm1/mean"] = tf.Variable(tf.random_normal((1, 128, 128, 32)), dtype=tf.float32, name="batch_norm_mean1")
+				params["2/batch_norm1/var"] = tf.Variable(tf.random_normal((1, 128, 128, 32)), dtype=tf.float32, name="batch_norm_var1")
 
 				params["2/W2"] = tf.Variable(tf.random_normal((5, 5, 32, 32)), dtype=tf.float32, name="W2")
 				params["2/b2"] = tf.Variable(tf.random_normal((1, 1, 1, 32)), dtype=tf.float32, name="b2")
-				params["2/batch_norm2/mean"] = tf.Variable(tf.random_normal(64, 64, 32), dtype=tf.float32, name="batch_norm_mean2")
-				params["2/batch_norm2/var"] = tf.Variable(tf.random_normal(64, 64, 32), dtype=tf.float32, name="batch_norm_var2")
+				params["2/batch_norm2/mean"] = tf.Variable(tf.random_normal((1, 64, 64, 32)), dtype=tf.float32, name="batch_norm_mean2")
+				params["2/batch_norm2/var"] = tf.Variable(tf.random_normal((1, 64, 64, 32)), dtype=tf.float32, name="batch_norm_var2")
 				
 				params["2/W3"] = tf.Variable(tf.random_normal((5, 5, 32, 64)), dtype=tf.float32, name="W3")
 				params["2/b3"] = tf.Variable(tf.random_normal((1, 1, 1, 64)), dtype=tf.float32, name="b3")
-				params["2/batch_norm3/mean"] = tf.Variable(tf.random_normal(32, 32, 64), dtype=tf.float32, name="batch_norm_mean3")
-				params["2/batch_norm3/var"] = tf.Variable(tf.random_normal(32, 32, 64), dtype=tf.float32, name="batch_norm_var3")
+				params["2/batch_norm3/mean"] = tf.Variable(tf.random_normal((1, 32, 32, 64)), dtype=tf.float32, name="batch_norm_mean3")
+				params["2/batch_norm3/var"] = tf.Variable(tf.random_normal((1, 32, 32, 64)), dtype=tf.float32, name="batch_norm_var3")
 				
 				params["2/W4"] = tf.Variable(tf.random_normal((5, 5, 64, 64)), dtype=tf.float32, name="W4")
 				params["2/b4"] = tf.Variable(tf.random_normal((1, 1, 1, 64)), dtype=tf.float32, name="b4")
-				params["2/batch_norm4/mean"] = tf.Variable(tf.random_normal(16, 16, 64), dtype=tf.float32, name="batch_norm_mean4")
-				params["2/batch_norm4/var"] = tf.Variable(tf.random_normal(16, 16, 64), dtype=tf.float32, name="batch_norm_var4")
+				params["2/batch_norm4/mean"] = tf.Variable(tf.random_normal((1, 16, 16, 64)), dtype=tf.float32, name="batch_norm_mean4")
+				params["2/batch_norm4/var"] = tf.Variable(tf.random_normal((1, 16, 16, 64)), dtype=tf.float32, name="batch_norm_var4")
 
 			with tf.name_scope("fc"):
-				params["W5"] = tf.Variable(tf.random_normal((8*8*64, 256)), dtype=tf.float32, name="W5")
+				params["W5"] = tf.Variable(tf.random_normal((2*8*8*64, 256)), dtype=tf.float32, name="W5")
 				params["b5"] = tf.Variable(tf.random_normal((1, 256)), dtype=tf.float32, name="b5")
 				
 				params["W6"] = tf.Variable(tf.random_normal((256, 64)), dtype=tf.float32, name="W5")
@@ -164,46 +164,46 @@ class FeatureCNN():
 
 	def _build_net(self, X, drop_rate, params):
 		with tf.name_scope("net1"):
-			layer1_1 = tf.nn.conv2d(X, params["1/W1"], strides=(1, 1), padding="SAME") + params["1/b1"]
+			layer1_1 = tf.nn.conv2d(X, params["1/W1"], strides=(1, 1, 1, 1), padding="SAME") + params["1/b1"]
 			layer1_1 = tf.nn.batch_normalization(layer1_1, params["1/batch_norm1/mean"], params["1/batch_norm1/var"], None, None, 1e-7)
 			layer1_1 = tf.nn.relu(layer1_1)
-			layer1_1 = tf.nn.max_pool(layer1_1, (2, 2), strides=(2, 2), padding="SAME") # 64
+			layer1_1 = tf.nn.max_pool(layer1_1, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME") # 64
 
-			layer2_1 = tf.nn.conv2d(layer1_1, params["1/W2"], strides=(1, 1), padding="SAME") + params["1/b2"]
+			layer2_1 = tf.nn.conv2d(layer1_1, params["1/W2"], strides=(1, 1, 1, 1), padding="SAME") + params["1/b2"]
 			layer2_1 = tf.nn.batch_normalization(layer2_1, params["1/batch_norm2/mean"], params["1/batch_norm2/var"], None, None, 1e-7)
 			layer2_1 = tf.nn.relu(layer2_1)
-			layer2_1 = tf.nn.max_pool(layer2_1, (2, 2), strides=(2, 2), padding="SAME") # 32
+			layer2_1 = tf.nn.max_pool(layer2_1, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME") # 32
 
-			layer3_1 = tf.nn.conv2d(layer2_1, params["1/W3"], strides=(1, 1), padding="SAME") + params["1/b3"]
+			layer3_1 = tf.nn.conv2d(layer2_1, params["1/W3"], strides=(1, 1, 1, 1), padding="SAME") + params["1/b3"]
 			layer3_1 = tf.nn.batch_normalization(layer3_1, params["1/batch_norm3/mean"], params["1/batch_norm3/var"], None, None, 1e-7)
 			layer3_1 = tf.nn.relu(layer3_1)
-			layer3_1 = tf.nn.max_pool(layer3_1, (2, 2), strides=(2, 2), padding="SAME") # 16
+			layer3_1 = tf.nn.max_pool(layer3_1, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME") # 16
 
-			layer4_1 = tf.nn.conv2d(layer3_1, params["1/W4"], strides=(1, 1), padding="SAME") + params["1/b4"]
+			layer4_1 = tf.nn.conv2d(layer3_1, params["1/W4"], strides=(1, 1, 1, 1), padding="SAME") + params["1/b4"]
 			layer4_1 = tf.nn.batch_normalization(layer4_1, params["1/batch_norm4/mean"], params["1/batch_norm4/var"], None, None, 1e-7)
 			layer4_1 = tf.nn.relu(layer4_1)
-			layer4_1 = tf.nn.max_pool(layer4_1, (2, 2), strides=(2, 2), padding="SAME") # 8
+			layer4_1 = tf.nn.max_pool(layer4_1, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME") # 8
 			
 		with tf.name_scope("net2"):
-			layer1_2 = tf.nn.conv2d(X, params["2/W1"], strides=(1, 1), padding="SAME") + params["2/b1"]
+			layer1_2 = tf.nn.conv2d(X, params["2/W1"], strides=(1, 1, 1, 1), padding="SAME") + params["2/b1"]
 			layer1_2 = tf.nn.batch_normalization(layer1_2, params["2/batch_norm1/mean"], params["2/batch_norm1/var"], None, None, 1e-7)
 			layer1_2 = tf.nn.relu(layer1_2)
-			layer1_2 = tf.nn.max_pool(layer1_2, (2, 2), strides=(2, 2), padding="SAME")
+			layer1_2 = tf.nn.max_pool(layer1_2, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME")
 
-			layer2_2 = tf.nn.conv2d(layer1_2, params["2/W2"], strides=(1, 1), padding="SAME") + params["2/b2"]
+			layer2_2 = tf.nn.conv2d(layer1_2, params["2/W2"], strides=(1, 1, 1, 1), padding="SAME") + params["2/b2"]
 			layer2_2 = tf.nn.batch_normalization(layer2_2, params["2/batch_norm2/mean"], params["2/batch_norm2/var"], None, None, 1e-7)
 			layer2_2 = tf.nn.relu(layer2_2)
-			layer2_2 = tf.nn.max_pool(layer2_2, (2, 2), strides=(2, 2), padding="SAME")
+			layer2_2 = tf.nn.max_pool(layer2_2, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME")
 
-			layer3_2 = tf.nn.conv2d(layer2_2, params["2/W3"], strides=(1, 1), padding="SAME") + params["2/b3"]
+			layer3_2 = tf.nn.conv2d(layer2_2, params["2/W3"], strides=(1, 1, 1, 1), padding="SAME") + params["2/b3"]
 			layer3_2 = tf.nn.batch_normalization(layer3_2, params["2/batch_norm3/mean"], params["2/batch_norm3/var"], None, None, 1e-7)
 			layer3_2 = tf.nn.relu(layer3_2)
-			layer3_2 = tf.nn.max_pool(layer3_2, (2, 2), strides=(2, 2), padding="SAME")
+			layer3_2 = tf.nn.max_pool(layer3_2, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME")
 
-			layer4_2 = tf.nn.conv2d(layer3_2, params["2/W4"], strides=(1, 1), padding="SAME") + params["2/b4"]
+			layer4_2 = tf.nn.conv2d(layer3_2, params["2/W4"], strides=(1, 1, 1, 1), padding="SAME") + params["2/b4"]
 			layer4_2 = tf.nn.batch_normalization(layer4_2, params["2/batch_norm4/mean"], params["2/batch_norm4/var"], None, None, 1e-7)
 			layer4_2 = tf.nn.relu(layer4_2)
-			layer4_2 = tf.nn.max_pool(layer4_2, (2, 2), strides=(2, 2), padding="SAME")
+			layer4_2 = tf.nn.max_pool(layer4_2, (1, 2, 2, 1), strides=(1, 2, 2, 1), padding="SAME")
 
 		with tf.name_scope("merged"):
 			layer4_1 = tf.reshape(layer4_1, (-1, 8*8*64))
