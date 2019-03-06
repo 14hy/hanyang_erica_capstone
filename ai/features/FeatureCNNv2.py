@@ -37,9 +37,8 @@ class FeatureCNN():
 				self.sess = tf.Session()
 				self.sess.run(tf.global_variables_initializer())
 
-		with tf.device("/cpu:0"):
-			with self.graph.as_default():
-				self.saver = tf.train.Saver(self.sess, self.ckpt)
+			with tf.device("/cpu:0"):
+				self.saver = tf.train.Saver()
 
 		print("Feature CNN was built.")
 
