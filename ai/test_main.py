@@ -249,7 +249,7 @@ def trash_data_generator(batch_size, dataset_type="train"):
 			X_batch[i - start] = img
 			Y_batch[i - start, 0] = lbl
 
-		yield X_batch#, Y_batch, num_batch
+		yield X_batch, Y_batch, num_batch
 
 def rnn_trash_data_generator(num_sample, num_step, dataset_type="train"):
 	BATCH_SIZE = 512
@@ -411,7 +411,7 @@ def FMD_data_generate(batch_size, dataset_type="train"):
 
 		yield X_batch, Y_batch
 
-def train_FMD_cnn():
+def train_FMD_cnn(gpu=0):
 	epochs = 150
 	batch_size = 128
 	num_classes = 6
@@ -422,7 +422,7 @@ def train_FMD_cnn():
 	
 	from FeatureCNN import FeatureCNN
 
-	cnn = FeatureCNN(num_classes, ckpt_file, "/gpu:0", batch_size=batch_size, eta=1e-2)
+	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-2)
 	cnn.build((128, 128, 3))
 
 	for e in range(epochs):
@@ -477,18 +477,51 @@ def train_FMD_cnn():
 	# print(cnn.transform(images))
 
 
-def train_trash_cnn():
-	images, labels = load_trash_dataset(label=True)
-	num_classes = labels.shape[1]
+def train_trash_cnn(gpu=0):
+	epochs = 150
+	batch_size = 128
+	num_classes = 6
+	if VM:
+		ckpt_file = "ckpts/capstone/feature_cnn.ckpt"
+	else:
+		ckpt_file = "D:/ckpts/capstone/feature_cnn.ckpt"
 
 	from FeatureCNN import FeatureCNN
 
-	cnn = FeatureCNN(num_classes, "feature_cnn", device="/gpu:0", eta=1e-3)
-	cnn.build((128, 128, 3), load_weights=False)
-	cnn.fit(images, labels, 0.7, epochs=150)
+	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-2)
+	cnn.build((128, 128, 3))
 
-	print(cnn.score(images, labels))
-	# print(cnn.transform(images))
+	for e in range(epochs):
+		train_loader = iter(trash_data_generator(batch_size, "train"))
+		train_loss = 0.0
+
+		cnt = 0
+		for X_batch, Y_batch, _ in train_loader:
+			cnn.fit(X_batch, Y_batch, 0.8)
+			train_loss += cnn.compute_loss(X_batch, Y_batch)
+			cnt += 1
+
+		train_loss /= cnt
+
+		val_loader = iter(trash_data_generator(batch_size, "valid"))
+		val_loss = 0.0
+		val_acc = 0.0
+
+		cnt = 0
+		for X_batch, Y_batch, _ in val_loader:
+			val_loss += cnn.compute_loss(X_batch, Y_batch)
+			val_acc += cnn.score(X_batch, Y_batch)
+			cnt += 1
+
+		val_loss /= cnt
+		val_acc /= cnt
+
+		print(f"Epoch {e+1}/{epochs}")
+		print(f"Train loss: {train_loss:.6f}")
+		print(f"Val loss: {val_loss:.6f}")
+		print(f"Val acc: {val_acc:.6f}")
+
+	cnn.save()
 
 def validate_encoder():
 	loader = iter(FMD_data_generate_no_label(128))
@@ -589,11 +622,11 @@ def test():
 
 
 # train_FMD_encoder()
-train_trash_encoder()
+# train_trash_encoder()
 # validate_encoder()
 # train_trash_cnn()
 # train_FMD_cnn()
-train_FMD_encoder()
+# train_FMD_encoder()
 # train_classifier_with_generator()
 
 # test()
