@@ -24,7 +24,7 @@ class Classifier():
 		self.cnn = []
 		self.rnn = None
 
-		self.encoded_size = 2 * 2 * 32
+		self.encoded_size = 2 * 2 * 128
 		self.cnn_size = 4 * 4 * 128
 		# self.input_size = self.encoded_size + self.cnn_size
 		# self.input_size = self.cnn_size + self.cnn_size

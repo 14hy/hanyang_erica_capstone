@@ -570,8 +570,11 @@ def train_classifier_with_generator():
 
 	from Classifier import Classifier
 
-	clf = Classifier(num_step, 4, "D:/ckpts/capstone", eta=1e-3)
-	clf.build(num_gpu=2)
+	if VM:
+		clf = Classifier(num_step, 4, "ckpts/capstone", eta=1e-4)
+	else:
+		clf = Classifier(num_step, 4, "D:/ckpts/capstone", eta=1e-4)
+	clf.build(num_gpu=1)
 
 	for e in range(epochs):
 		train_loader = iter(rnn_trash_data_generator(batch_size, num_step, "train"))
