@@ -25,8 +25,8 @@ class FeatureCNN():
 
 		with tf.device(self.device):
 			with self.graph.as_default():
-				self.X, self.Y, self.drop_rate = self._init_placeholder(shape)
-				self.feature_map, logits = self._build_network(self.X, self.drop_rate)
+				self.X, self.Y, self.keep_prob = self._init_placeholder(shape)
+				self.feature_map, logits = self._build_network(self.X, self.keep_prob)
 				self.loss = self._loss_function(logits, self.Y)
 				self.accuracy = self._accuracy(logits, self.Y)
 
@@ -43,12 +43,12 @@ class FeatureCNN():
 
 		print("Feature CNN building completed.")
 
-	def fit(self, X_batch, Y_batch, drop_rate):
+	def fit(self, X_batch, Y_batch, keep_prob):
 
 		with self.graph.as_default():
 
 			self.sess.run(self.train_op, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.drop_rate: drop_rate
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: keep_prob
 			})
 
 	def transform(self, X_data):
@@ -83,7 +83,7 @@ class FeatureCNN():
 			X_batch, Y_batch = self._next_batch(X_data, Y_data, b)
 
 			acc = self.sess.run(self.accuracy, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.drop_rate: 0.
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.
 			})
 
 			scores.append(acc)
@@ -93,7 +93,7 @@ class FeatureCNN():
 	def compute_loss(self, X_batch, Y_batch):
 		with self.graph.as_default():
 			loss = self.sess.run(self.loss, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.drop_rate: 0.
+				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.
 			})
 
 		return np.mean(loss)
@@ -121,7 +121,7 @@ class FeatureCNN():
 
 		return X_batch
 
-	def _build_network(self, X, drop_rate):
+	def _build_network(self, X, keep_prob):
 		regularizer = tf.contrib.layers.l2_regularizer(scale=0.1)
 
 		with tf.name_scope("feature_cnn"):
@@ -158,10 +158,10 @@ class FeatureCNN():
 			layer11 = tf.layers.flatten(layer10)
 
 			layer12 = tf.layers.dense(layer11, 256, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
-			layer12 = tf.layers.dropout(layer12, drop_rate)
+			layer12 = tf.layers.dropout(layer12, keep_prob)
 			
 			layer13 = tf.layers.dense(layer12, 64, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
-			layer13 = tf.layers.dropout(layer13, drop_rate)
+			layer13 = tf.layers.dropout(layer13, keep_prob)
 
 			layer14 = tf.layers.dense(layer13, self.num_classes, activation=None)#, kernel_regularizer=regularizer)
 
@@ -185,6 +185,6 @@ class FeatureCNN():
 		with tf.name_scope("in"):
 			X = tf.placeholder(tf.float32, shape=(None, *shape), name="X")
 			Y = tf.placeholder(tf.float32, shape=(None, self.num_classes), name="Y")
-			drop_rate = tf.placeholder(tf.float32, shape=(), name="drop_rate")
+			keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
 
-		return X, Y, drop_rate
+		return X, Y, keep_prob
