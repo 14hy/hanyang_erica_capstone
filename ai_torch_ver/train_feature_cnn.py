@@ -4,14 +4,14 @@ import torch
 from torch import optim, nn
 import numpy as np
 
-VM = False
+VM = True
 if VM:
 	TRASH_DATA_PATH = "/home/jylee/datasets/capstonedata/total/"
 else:
 	TRASH_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/total"
-ETA = 1e-4
+ETA = 3e-4
 BATCH_SIZE = 128
-EPOCHS = 100
+EPOCHS = 200
 DROP_RATE = 0.4
 NUM_CLASSES = 4
 

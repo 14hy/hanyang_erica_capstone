@@ -6,10 +6,13 @@ from TrashDetector import TrashDetector
 from prepare_data import image_loader
 
 VM = False
-DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/nothing_or_trash"
+if VM:
+	DATA_PATH = "/home/jylee/datasets/caps"
+else:
+	DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/nothing_or_trash"
 ETA = 1e-3
 BATCH_SIZE = 128
-EPOCHS = 50
+EPOCHS = 1
 DROP_RATE = 0.4
 
 def score(logps, labels):
