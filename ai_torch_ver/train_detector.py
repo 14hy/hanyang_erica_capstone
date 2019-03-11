@@ -7,85 +7,98 @@ from prepare_data import image_loader
 
 VM = False
 if VM:
-	DATA_PATH = "/home/jylee/datasets/caps"
+    DATA_PATH = "/home/jylee/datasets/caps"
+    CKPT = "ckpts/detector.pth"
 else:
-	DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/nothing_or_trash"
+    DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/nothing_or_trash"
+    CKPT = "ckpts/detector.pth"
 ETA = 1e-3
 BATCH_SIZE = 128
 EPOCHS = 1
 DROP_RATE = 0.4
 
+
 def score(logps, labels):
-	ps = torch.exp(logps)
-	cls_ps, top_k = ps.topk(1, dim=1)
-	equal = top_k == labels.view(*top_k.shape)
-	acc = torch.mean(equal.type(torch.FloatTensor))
-	return acc
+    ps = torch.exp(logps)
+    cls_ps, top_k = ps.topk(1, dim=1)
+    equal = top_k == labels.view(*top_k.shape)
+    acc = torch.mean(equal.type(torch.FloatTensor))
+    return acc
+
 
 def train_detector():
-	
-	device = torch.device("cuda:0")
-	cnn = nn.DataParallel(TrashDetector(DROP_RATE)).to(device)
-	criterion = nn.NLLLoss()
-	optimizer = optim.Adam(cnn.parameters(), lr=ETA)
+    
+    device = torch.device("cuda:0")
+    detector = TrashDetector(DROP_RATE)
 
-	train_loader, valid_loader, test_loader = image_loader(DATA_PATH, BATCH_SIZE)
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(detector, device_ids=[0, 1]).to(device)
+    else:
+        model = detector.to(device)
 
-	val_losses = []
+    criterion = nn.NLLLoss()
+    optimizer = optim.Adam(model.parameters(), lr=ETA)
 
-	for e in range(EPOCHS):
-		
-		train_loss = 0.0
-		train_acc = 0.0
+    train_loader, valid_loader, test_loader = image_loader(DATA_PATH, BATCH_SIZE)
 
-		for x_batch, y_batch in train_loader:
-			x_batch = x_batch.to(device)
-			y_batch = y_batch.to(device)
+    val_losses = []
 
-			logps = cnn(x_batch)
-			loss = criterion(logps, y_batch)
+    for e in range(EPOCHS):
+        
+        train_loss = 0.0
+        train_acc = 0.0
 
-			train_loss += loss.item()
-			train_acc += score(logps, y_batch).item()
+        for x_batch, y_batch in train_loader:
+            x_batch = x_batch.to(device)
+            y_batch = y_batch.to(device)
 
-			optimizer.zero_grad()
-			loss.backward()
-			optimizer.step()
+            logps = model(x_batch)
+            loss = criterion(logps, y_batch)
 
-		with torch.no_grad():
-			cnn.eval()
+            train_loss += loss.item()
+            train_acc += score(logps, y_batch).item()
 
-			val_loss = 0.0
-			val_acc = 0.0
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-			for x_batch, y_batch in valid_loader:
-				x_batch = x_batch.to(device)
-				y_batch = y_batch.to(device)
+        with torch.no_grad():
+            model.eval()
 
-				logps = cnn(x_batch)
-				loss = criterion(logps, y_batch)
+            val_loss = 0.0
+            val_acc = 0.0
 
-				val_loss += loss.item()
-				val_acc += score(logps, y_batch)
+            for x_batch, y_batch in valid_loader:
+                x_batch = x_batch.to(device)
+                y_batch = y_batch.to(device)
 
-			train_loss /= len(train_loader)
-			train_acc /= len(train_loader)
-			val_loss /= len(valid_loader)
-			val_acc /= len(valid_loader)
+                logps = model(x_batch)
+                loss = criterion(logps, y_batch)
 
-			print(f"Epochs {e+1}/{EPOCHS}")
-			print(f"Train loss: {train_loss:.6f}")
-			print(f"Train acc: {train_acc:.6f}")
-			print(f"Valid loss: {val_loss:.6f}")
-			print(f"Valid acc: {val_acc:.6f}")
+                val_loss += loss.item()
+                val_acc += score(logps, y_batch)
 
-			val_losses.append(val_loss)
+            train_loss /= len(train_loader)
+            train_acc /= len(train_loader)
+            val_loss /= len(valid_loader)
+            val_acc /= len(valid_loader)
 
-			if np.min(val_losses) > val_loss:
-				torch.save(cnn.state_dict(), "D:/ckpts/capstone/torch/trash_detector.pth")
+            print(f"Epochs {e+1}/{EPOCHS}")
+            print(f"Train loss: {train_loss:.6f}")
+            print(f"Train acc: {train_acc:.6f}")
+            print(f"Valid loss: {val_loss:.6f}")
+            print(f"Valid acc: {val_acc:.6f}")
 
-			cnn.train()
+            val_losses.append(val_loss)
+
+            if np.min(val_losses) >= val_loss:
+                if torch.cuda.device_count() > 1:
+                    model.module.save(CKPT)
+                else:
+                    model.save(CKPT)
+
+            model.train()
 
 
 if __name__ == "__main__":
-	train_detector()
+    train_detector()
