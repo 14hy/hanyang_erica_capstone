@@ -51,6 +51,14 @@ class TrashDetector(nn.Module):
 
         return x
 
+    def predict(self, x):
+        with torch.no_grad():
+            logps = self.forward(x)
+            ps = torch.exp(logps)
+
+            _, topk = ps.topk(1, dim=1)
+        return topk.squeeze()
+
     def save(self, ckpt):
         torch.save(self.state_dict(), ckpt)
         print("Trash detector was saved.")

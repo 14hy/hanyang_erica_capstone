@@ -4,7 +4,7 @@ import os
 
 ok = True
 
-data_path = "D:\\Users\\jylee\\Dropbox\\Files\\Datasets\\materials"
+data_path = "D:\\Users\\jylee\\Dropbox\\Files\\Datasets\\trashdata"
 # image_path = os.path.join(data_path, "images")
 # label_path = os.path.join(data_path, "labels")
 labels_dict = ["nothing", "plastic", "can", "glass", "extra"]
@@ -18,7 +18,7 @@ def capture(cap):
 def main(args):
 	cap = cv2.VideoCapture(1)
 
-	cur_index = 0
+	cur_index = 1
 
 	with open(os.path.join(data_path, "info.txt"), "r") as f:
 		cur_index = int(f.read())

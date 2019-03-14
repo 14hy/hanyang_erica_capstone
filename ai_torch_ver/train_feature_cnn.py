@@ -14,8 +14,8 @@ else:
     TRASH_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/total"
 ETA = 3e-4
 BATCH_SIZE = 128
-EPOCHS = 200
-DROP_RATE = 0.4
+EPOCHS = 100
+DROP_RATE = 0.5
 NUM_CLASSES = 4
 
 
@@ -97,7 +97,6 @@ def train_feature_cnn():
                     model.save(CKPT)
                 # state_dict = model.state_dict()
                 # torch.save(state_dict, CKPT)
-                print("Feature CNN was saved.")
 
             val_losses.append(val_loss)
             model.train()

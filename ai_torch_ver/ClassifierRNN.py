@@ -44,6 +44,7 @@ class ClassifierRNN(nn.Module):
         assert(x.shape[1] == self.num_step)
 
         res_out, res_hidden = self.lstm(x)
+        res_out = res_out.contiguous()
         res_out = res_out.view(-1, self.num_step * self.hidden_size)
 
         x = self.classifier(res_out)

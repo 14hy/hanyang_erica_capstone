@@ -35,7 +35,10 @@ class Classifier(nn.Module):
         cnn = FeatureCNN(self.num_classes, 0.5)
         cnn.load(FEATURE_CNN_CKPT)
         
-        self.features = FeatureMap(cnn.conv1, cnn.conv2, cnn.features)
+        if torch.cuda.device_count() > 1:
+            self.features = nn.DataParallel(FeatureMap(cnn.conv1, cnn.conv2, cnn.features))
+        else:
+            self.features = FeatureMap(cnn.conv1, cnn.conv2, cnn.features)
 
         # for param in pcnn.parameters():
         #     param.requires_grad_(False)
@@ -91,7 +94,7 @@ class Classifier(nn.Module):
         acc = torch.mean(equal.type(torch.FloatTensor))
         return acc
 
-    def forward(self, x, rearange=True):
+    def forward(self, x):
         # if rearange:
         #     x = self.rearange_image(x)
 
@@ -110,8 +113,8 @@ class Classifier(nn.Module):
 
         # return x
 
-        if rearange:
-            x = self.rearange_image(x)
+        # if rearange:
+        #     x = self.rearange_image(x)
 
         n_b = x.size(0)
         n_s = x.size(1)
@@ -127,19 +130,19 @@ class Classifier(nn.Module):
 
         return x
 
-    def rearange_image(self, x):
-        x = x.view(-1, NUM_STEP, 128, 128, 3)
-        x = x.permute(4, 2, 3)
-        return x
+    # def rearange_image(self, x):
+    #     x = x.view(-1, NUM_STEP, 128, 128, 3)
+    #     x = x.permute(4, 2, 3)
+    #     return x
 
     def predict(self, x):
         with torch.no_grad():
             x = self.forward(x)
             cls_ps, top_k = x.topk(1, dim=1)
-            return top_k.data
+            return top_k.squeeze().data
 
-    def score(self, x, y):
-        top_k = self.predict(x)
+    def score(self, logps, y):
+        top_k = logps.topk(1, dim=1)[1]
         equal = top_k == y.view(*top_k.shape)
         score = torch.mean(equal.type(torch.FloatTensor))
         return score
