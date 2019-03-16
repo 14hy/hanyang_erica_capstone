@@ -6,6 +6,7 @@ from ImageSubscriber import ImageSubscriber
 from MotorPublisher import MotorPublisher
 import sys
 import threading as th
+import time
 
 HOST = "192.168.137.1"
 PORT = 13333
