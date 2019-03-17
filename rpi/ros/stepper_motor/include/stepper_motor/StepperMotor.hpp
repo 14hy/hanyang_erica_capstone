@@ -18,13 +18,12 @@ public:
 	void Destroy();
 	void MotorCallback(const std_msgs::Int32MultiArray::ConstPtr& ptr);
 
-	void GoStep(class MotorInfo const& info, int dir, int steps);
+	void GoStep(const class MotorInfo& info, int dir, int steps);
 	void Step(class MotorInfo const& info, int steps);
 
 private:
 	ros::NodeHandle nh;
-	ros::Subscriber sub_box;
-	ros::Subscriber sub_support;
+	ros::Subscriber sub;
 	ros::ServiceClient serv_clnt;
 
 	bool is_ready;

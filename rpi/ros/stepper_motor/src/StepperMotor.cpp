@@ -39,13 +39,13 @@ void StepperMotor::MotorCallback(const std_msgs::Int32MultiArray::ConstPtr& ptr)
 		ROS_INFO("Motor dir: %d", data[1]);
 		ROS_INFO("Motor step: %d", data[2]);
 
-		MotorInfo const* info;
+		const MotorInfo* info;
 		if (data[0] == BOX_MOTOR)
 			info = &box_motor;
 		else if (data[0] == SUPPORT_MOTOR)
 			info = &support_motor;
 
-		GoStep(info, data[1], data[2]);
+		GoStep(*info, data[1], data[2]);
 	}
 }
 
