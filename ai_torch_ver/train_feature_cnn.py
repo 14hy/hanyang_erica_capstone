@@ -1,8 +1,13 @@
-from features.FeatureCNNv2 import FeatureCNN
-from prepare_data import image_loader
+
 import torch
 from torch import optim, nn
 import numpy as np
+import sys
+
+sys.path.append("../")
+
+from ai_torch_ver.features.FeatureCNNv2 import FeatureCNN
+from ai_torch_ver.prepare_data import image_loader
 
 VM = False
 if VM:
@@ -14,7 +19,7 @@ else:
     TRASH_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/total"
 ETA = 3e-4
 BATCH_SIZE = 128
-EPOCHS = 100
+EPOCHS = 50
 DROP_RATE = 0.5
 NUM_CLASSES = 4
 

@@ -2,16 +2,13 @@ import torch
 from torch import nn
 import numpy as np
 import sys
-
-sys.path.append(".")
-
-from features.FeatureCNNv2 import FeatureCNN
-from ClassifierRNN import ClassifierRNN
+from ai_torch_ver.features.FeatureCNNv2 import FeatureCNN
+from ai_torch_ver.ClassifierRNN import ClassifierRNN
 
 # FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
-FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
+FEATURE_CNN_CKPT = "../ai_torch_ver/ckpts/feature_cnn.pth"
 # CLASSIFIER_RNN_CKPT = "D:/ckpts/capstone/torch/classifier_rnn.pth"
-CLASSIFIER_RNN_CKPT = "ckpts/classifier_rnn.pth"
+CLASSIFIER_RNN_CKPT = "../ai_torch_ver/ckpts/classifier_rnn.pth"
 NUM_CLASSES = 4
 NUM_STEP = 8
 
@@ -79,15 +76,15 @@ class Classifier(nn.Module):
             "state_dict": self.state_dict()
         }
         torch.save(model, ckpt)
-        print("Model was saved.")
+        print("Classifier was saved.")
 
     def load(self, ckpt):
         model = torch.load(ckpt)
         self.hidden = (model["short_term"], model["long_term"])
         self.load_state_dict(model["state_dict"])
-        print("Model was loaded.")
+        print("Classifier was loaded.")
 
-    def score(self, logps, y, rearange=True):
+    def score(self, logps, y):
         ps = torch.exp(logps)
         _, topk = ps.topk(dim=1)
         equal = topk == y.view(*topk.shape)

@@ -1,7 +1,11 @@
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from prepare_data import rnn_data
+import sys
+
+sys.path.append("../")
+
+from ai_torch_ver.prepare_data import rnn_data
 
 TRASH_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/total"
 BATCH_SIZE = 32
@@ -26,7 +30,7 @@ def test_rnn_data():
 def test_classifier():
     test_loader = rnn_data(TRASH_DATA_PATH, BATCH_SIZE, "test")
 
-    from Classifier import Classifier
+    from ai_torch_ver.Classifier import Classifier
     clf = Classifier(4, 0.5).cuda()
     clf.load(CKPT)
 
@@ -38,7 +42,7 @@ def test_classifier():
             y_batch = y_batch.cuda()
             y_batch = torch.max(y_batch, dim=1)[1]
             
-            score = clf.score(x_batch, y_batch, False)
+            score = clf.score(x_batch, y_batch)
             test_score += score
             cnt += 1
 
@@ -47,5 +51,5 @@ def test_classifier():
         print(f"Test score: {test_score:.6f}")
 
 
-# test()
-test_classifier()
+test_rnn_data()
+# test_classifier()
