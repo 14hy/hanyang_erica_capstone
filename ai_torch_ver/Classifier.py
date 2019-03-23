@@ -6,6 +6,7 @@ from ai_torch_ver.features.FeatureCNNv2 import FeatureCNN
 from ai_torch_ver.ClassifierRNN import ClassifierRNN
 
 # FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
+# FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
 FEATURE_CNN_CKPT = "../ai_torch_ver/ckpts/feature_cnn.pth"
 # CLASSIFIER_RNN_CKPT = "D:/ckpts/capstone/torch/classifier_rnn.pth"
 CLASSIFIER_RNN_CKPT = "../ai_torch_ver/ckpts/classifier_rnn.pth"
@@ -22,7 +23,7 @@ class Classifier(nn.Module):
 
         self.input_size = 256
         self.hidden_size = 64
-        self.num_layers = 2
+        self.num_layers = 1
         self.drop_rate = drop_rate
         self.hidden = (
             torch.randn(self.num_layers, 1, self.hidden_size).data,
@@ -33,9 +34,12 @@ class Classifier(nn.Module):
         cnn.load(FEATURE_CNN_CKPT)
         
         if torch.cuda.device_count() > 1:
-            self.features = nn.DataParallel(FeatureMap(cnn.conv1, cnn.conv2, cnn.features))
+            self.features = nn.DataParallel(FeatureMap(cnn.conv1, cnn.conv2, cnn.features)).cuda()
         else:
-            self.features = FeatureMap(cnn.conv1, cnn.conv2, cnn.features)
+            self.features = FeatureMap(cnn.conv1, cnn.conv2, cnn.features).cuda()
+
+        for param in self.features.parameters():
+            param.requires_grad_(False)
 
         # for param in pcnn.parameters():
         #     param.requires_grad_(False)
@@ -135,7 +139,9 @@ class Classifier(nn.Module):
     def predict(self, x):
         with torch.no_grad():
             x = self.forward(x)
-            cls_ps, top_k = x.topk(1, dim=1)
+            ps = torch.exp(x)
+            # print(ps)
+            cls_ps, top_k = ps.topk(1, dim=1)
             return top_k.squeeze().data
 
     def score(self, logps, y):

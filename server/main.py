@@ -15,10 +15,12 @@ image_channel = 3
 
 sys.path.append("../")
 
-from ai_torch_ver.AI import AI
+from ai_torch_ver.AIv2 import AI
 
 image = None
 ok = True
+
+trash_map = ["can", "extra", "glass", "plastic", "nothing"]
 
 
 def image_show():
@@ -48,7 +50,7 @@ def main(args):
 
     try:
         while True:
-            image_arr = np.zeros((num_step, image_height, image_width, image_channel), dtype=np.double)
+            image_arr = np.zeros((num_step, image_height, image_width, image_channel))
             cnt = 0
             index = 0
             
@@ -67,7 +69,7 @@ def main(args):
                 image = None
 
             result = str(ai.predict(image_arr))
-            print("Result: {}".format(result))
+            print("Result: {}".format(trash_map[int(result)]))
 
             server.send_result(result)
 
@@ -80,7 +82,7 @@ def main(args):
         print("Exception occurs. Server shutdown.")
 
     ok = False
-    t.join()
+    # t.join()
 
 
 if __name__ == "__main__":

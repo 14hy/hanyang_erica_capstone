@@ -32,11 +32,7 @@ class TrashDetector(nn.Module):
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(8*8*64, 256),
-            nn.ReLU(),
-            nn.Dropout(drop_rate),
-
-            nn.Linear(256, 64),
+            nn.Linear(8*8*64, 64),
             nn.ReLU(),
             nn.Dropout(drop_rate),
 

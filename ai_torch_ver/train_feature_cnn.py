@@ -47,12 +47,14 @@ def train_feature_cnn():
 
     val_losses = []
 
-    train_loader, valid_loader, test_loader = image_loader(TRASH_DATA_PATH, BATCH_SIZE)
+    # train_loader, valid_loader, test_loader = image_loader(TRASH_DATA_PATH, BATCH_SIZE)
+    train_loader = image_loader(TRASH_DATA_PATH, BATCH_SIZE, True)
 
     for e in range(EPOCHS):
         
         train_loss = 0.0
         train_acc = 0.0
+        cnt = 0
 
         for x_batch, y_batch in train_loader:
             x_batch = x_batch.to(device)
@@ -63,49 +65,58 @@ def train_feature_cnn():
 
             train_loss += loss.item()
             train_acc += score(logps, y_batch).item()
+            cnt += 1
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-        with torch.no_grad():
-            model.eval()
+        print(f"Epochs {e+1}/{EPOCHS}")
+        print(f"Train loss: {train_loss/cnt:.6f}")
+        print(f"Train acc: {train_acc/cnt:.6f}")
 
-            val_loss = 0.0
-            val_acc = 0.0
+        # with torch.no_grad():
+        #     model.eval()
 
-            for x_batch, y_batch in valid_loader:
-                x_batch = x_batch.to(device)
-                y_batch = y_batch.to(device)
+        #     val_loss = 0.0
+        #     val_acc = 0.0
 
-                logps = model(x_batch)
-                loss = criterion(logps, y_batch)
+        #     for x_batch, y_batch in valid_loader:
+        #         x_batch = x_batch.to(device)
+        #         y_batch = y_batch.to(device)
 
-                val_loss += loss.item()
-                val_acc += score(logps, y_batch)
+        #         logps = model(x_batch)
+        #         loss = criterion(logps, y_batch)
 
-            train_loss /= len(train_loader)
-            train_acc /= len(train_loader)
-            val_loss /= len(valid_loader)
-            val_acc /= len(valid_loader)
+        #         val_loss += loss.item()
+        #         val_acc += score(logps, y_batch)
 
-            print(f"Epochs {e+1}/{EPOCHS}")
-            print(f"Train loss: {train_loss:.6f}")
-            print(f"Train acc: {train_acc:.6f}")
-            print(f"Valid loss: {val_loss:.6f}")
-            print(f"Valid acc: {val_acc:.6f}")
+        #     train_loss /= len(train_loader)
+        #     train_acc /= len(train_loader)
+        #     val_loss /= len(valid_loader)
+        #     val_acc /= len(valid_loader)
 
-            if val_losses and min(val_losses) > val_loss:
-                if type(model) is nn.DataParallel:
-                    model.module.save(CKPT)
-                else:
-                    model.save(CKPT)
-                # state_dict = model.state_dict()
-                # torch.save(state_dict, CKPT)
+        #     print(f"Epochs {e+1}/{EPOCHS}")
+        #     print(f"Train loss: {train_loss:.6f}")
+        #     print(f"Train acc: {train_acc:.6f}")
+        #     print(f"Valid loss: {val_loss:.6f}")
+        #     print(f"Valid acc: {val_acc:.6f}")
 
-            val_losses.append(val_loss)
-            model.train()
+        #     if val_losses and min(val_losses) > val_loss:
+        #         if type(model) is nn.DataParallel:
+        #             model.module.save(CKPT)
+        #         else:
+        #             model.save(CKPT)
+        #         # state_dict = model.state_dict()
+        #         # torch.save(state_dict, CKPT)
 
+        #     val_losses.append(val_loss)
+        #     model.train()
+
+    if type(model) is nn.DataParallel:
+        model.module.save(CKPT)
+    else:
+        model.save(CKPT)
 
 if __name__ == "__main__":
     train_feature_cnn()

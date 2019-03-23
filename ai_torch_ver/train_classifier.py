@@ -87,7 +87,7 @@ def train_classifier():
         cnt = 0
         for x_batch, y_batch in train_loader:
             x_batch = x_batch.to(device)
-            y_batch = torch.max(y_batch.to(device), dim=1)[1]
+            y_batch = y_batch.to(device).squeeze()
 
             logps = clf.forward(x_batch)
             loss = criterion(logps, y_batch)
@@ -118,7 +118,7 @@ def train_classifier():
             cnt = 0
             for x_batch, y_batch in valid_loader:
                 x_batch = x_batch.to(device)
-                y_batch = torch.max(y_batch.to(device), dim=1)[1]
+                y_batch = y_batch.to(device).squeeze()
 
                 logps = clf.forward(x_batch)
                 loss = criterion(logps, y_batch)

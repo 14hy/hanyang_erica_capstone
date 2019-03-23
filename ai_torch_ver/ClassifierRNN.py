@@ -15,7 +15,7 @@ class ClassifierRNN(nn.Module):
 
         self.hidden_size = hidden_size
 
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=drop_rate)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)  #, dropout=drop_rate)
 
         self.classifier = nn.Sequential(
             nn.Linear(num_step * hidden_size, 256),
