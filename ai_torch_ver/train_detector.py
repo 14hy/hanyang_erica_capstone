@@ -14,7 +14,7 @@ else:
     CKPT = "ckpts/detector.pth"
 ETA = 1e-3
 BATCH_SIZE = 128
-EPOCHS = 1
+EPOCHS = 3
 DROP_RATE = 0.4
 
 

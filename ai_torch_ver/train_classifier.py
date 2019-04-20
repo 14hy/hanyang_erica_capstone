@@ -3,10 +3,11 @@ import torch
 from torch import nn, optim
 import sys
 
-sys.path.append(".")
+if __name__ == "__main__":
+    sys.path.append("../")
 
-from prepare_data import image_loader, rnn_data
-from Classifier import Classifier
+from ai_torch_ver.prepare_data import image_loader, rnn_data
+from ai_torch_ver.Classifier import Classifier
 # from features.FeatureCNNv2 import FeatureCNN
 
 VM = False
@@ -86,7 +87,7 @@ def train_classifier():
         cnt = 0
         for x_batch, y_batch in train_loader:
             x_batch = x_batch.to(device)
-            y_batch = torch.max(y_batch.to(device), dim=1)[1]
+            y_batch = y_batch.to(device).squeeze()
 
             logps = clf.forward(x_batch)
             loss = criterion(logps, y_batch)
@@ -117,7 +118,7 @@ def train_classifier():
             cnt = 0
             for x_batch, y_batch in valid_loader:
                 x_batch = x_batch.to(device)
-                y_batch = torch.max(y_batch.to(device), dim=1)[1]
+                y_batch = y_batch.to(device).squeeze()
 
                 logps = clf.forward(x_batch)
                 loss = criterion(logps, y_batch)
@@ -137,6 +138,13 @@ def train_classifier():
             val_acc /= cnt
 
             val_losses.append(val_loss)
+
+            print(f"Epochs {e+1}/{EPOCHS}")
+            print(f"Train loss: {train_loss:.6f}")
+            print(f"Train acc: {train_acc:.6f}")
+            print(f"Valid loss: {val_loss:.6f}")
+            print(f"Valid acc: {val_acc:.6f}")
+            
             if min(val_losses) == val_loss:
                 # save(clf)
                 # if torch.cuda.device_count() > 1:
@@ -144,12 +152,6 @@ def train_classifier():
                 # else:
                 #     model.save(CKPT)
                 clf.save(CKPT)
-
-            print(f"Epochs {e+1}/{EPOCHS}")
-            print(f"Train loss: {train_loss:.6f}")
-            print(f"Train acc: {train_acc:.6f}")
-            print(f"Valid loss: {val_loss:.6f}")
-            print(f"Valid acc: {val_acc:.6f}")
 
             clf.train()
 

@@ -2,16 +2,14 @@ import torch
 from torch import nn
 import numpy as np
 import sys
-
-sys.path.append(".")
-
-from features.FeatureCNNv2 import FeatureCNN
-from ClassifierRNN import ClassifierRNN
+from ai_torch_ver.features.FeatureCNNv2 import FeatureCNN
+from ai_torch_ver.ClassifierRNN import ClassifierRNN
 
 # FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
-FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
+# FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
+FEATURE_CNN_CKPT = "../ai_torch_ver/ckpts/feature_cnn.pth"
 # CLASSIFIER_RNN_CKPT = "D:/ckpts/capstone/torch/classifier_rnn.pth"
-CLASSIFIER_RNN_CKPT = "ckpts/classifier_rnn.pth"
+CLASSIFIER_RNN_CKPT = "../ai_torch_ver/ckpts/classifier_rnn.pth"
 NUM_CLASSES = 4
 NUM_STEP = 8
 
@@ -25,7 +23,7 @@ class Classifier(nn.Module):
 
         self.input_size = 256
         self.hidden_size = 64
-        self.num_layers = 2
+        self.num_layers = 1
         self.drop_rate = drop_rate
         self.hidden = (
             torch.randn(self.num_layers, 1, self.hidden_size).data,
@@ -36,9 +34,12 @@ class Classifier(nn.Module):
         cnn.load(FEATURE_CNN_CKPT)
         
         if torch.cuda.device_count() > 1:
-            self.features = nn.DataParallel(FeatureMap(cnn.conv1, cnn.conv2, cnn.features))
+            self.features = nn.DataParallel(FeatureMap(cnn.conv1, cnn.conv2, cnn.features)).cuda()
         else:
-            self.features = FeatureMap(cnn.conv1, cnn.conv2, cnn.features)
+            self.features = FeatureMap(cnn.conv1, cnn.conv2, cnn.features).cuda()
+
+        for param in self.features.parameters():
+            param.requires_grad_(False)
 
         # for param in pcnn.parameters():
         #     param.requires_grad_(False)
@@ -79,15 +80,15 @@ class Classifier(nn.Module):
             "state_dict": self.state_dict()
         }
         torch.save(model, ckpt)
-        print("Model was saved.")
+        print("Classifier was saved.")
 
     def load(self, ckpt):
         model = torch.load(ckpt)
         self.hidden = (model["short_term"], model["long_term"])
         self.load_state_dict(model["state_dict"])
-        print("Model was loaded.")
+        print("Classifier was loaded.")
 
-    def score(self, logps, y, rearange=True):
+    def score(self, logps, y):
         ps = torch.exp(logps)
         _, topk = ps.topk(dim=1)
         equal = topk == y.view(*topk.shape)
@@ -138,7 +139,9 @@ class Classifier(nn.Module):
     def predict(self, x):
         with torch.no_grad():
             x = self.forward(x)
-            cls_ps, top_k = x.topk(1, dim=1)
+            ps = torch.exp(x)
+            # print(ps)
+            cls_ps, top_k = ps.topk(1, dim=1)
             return top_k.squeeze().data
 
     def score(self, logps, y):
