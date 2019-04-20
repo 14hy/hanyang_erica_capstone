@@ -1,2 +1,0 @@
-model_checkpoint_path: "/home/jylee/capstone/encoder_version/ckpts/encoder3.ckpt"
-all_model_checkpoint_paths: "/home/jylee/capstone/encoder_version/ckpts/encoder3.ckpt"

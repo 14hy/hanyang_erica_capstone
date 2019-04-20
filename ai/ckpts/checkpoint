@@ -1,2 +1,0 @@
-model_checkpoint_path: "encoder_trash2.ckpt"
-all_model_checkpoint_paths: "encoder_trash2.ckpt"

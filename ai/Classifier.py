@@ -1,148 +1,98 @@
+import torch
+from torch import nn
 import numpy as np
-import tensorflow as tf
 import sys
-import threading as th
+from ai.features.FeatureCNN import FeatureCNN
+from ai.ClassifierRNN import ClassifierRNN
 
-sys.path.append("./features/")
+# FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
+# FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
+FEATURE_CNN_CKPT = "../ai/ckpts/feature_cnn.pth"
+# CLASSIFIER_RNN_CKPT = "D:/ckpts/capstone/torch/classifier_rnn.pth"
+CLASSIFIER_RNN_CKPT = "../ai/ckpts/classifier_rnn.pth"
+NUM_CLASSES = 4
+NUM_STEP = 8
 
-from StackedEncoder import StackedEncoder
-from FeatureCNN import FeatureCNN
-from ClassifierRNN import ClassifierRNN
 
-class Classifier():
+class Classifier(nn.Module):
 
-	def __init__(self, num_step, num_classes, ckpts_dir, eta=1e-3, batch_size=128,  net_type="encoder"):
-		self.eta = eta
-		self.batch_size = batch_size
-		self.ckpts_dir = ckpts_dir
-		self.num_step = num_step
-		self.num_classes = num_classes
-		self.net_type = net_type
+    def __init__(self, num_classes, drop_rate=0.5):
+        super().__init__()
 
-		# self.encoder = None
-		self.encoders = []
-		self.cnn = []
-		self.rnn = None
+        self.num_classes = num_classes
 
-		self.encoded_size = 2 * 2 * 128
-		self.cnn_size = 4 * 4 * 128
-		# self.input_size = self.encoded_size + self.cnn_size
-		# self.input_size = self.cnn_size + self.cnn_size
+        self.input_size = 256
+        self.hidden_size = 32
+        self.num_layers = 1
+        self.drop_rate = drop_rate
+        # self.hidden = None
 
-	def build(self, num_gpu=1):
-		print("Building classifier...")
+        self.features = FeatureCNN(self.num_classes, drop_rate)
+        self.features.load(FEATURE_CNN_CKPT)
+        for param in self.features.parameters():
+            param.requires_grad_(False)
+        self.features.eval()
 
-		# self.encoder = StackedEncoder("encoder_texture", device="/gpu:0")
-		# self.encoder.build((128, 128, 3), load_weights=True)
+        self.classifier = ClassifierRNN(
+            NUM_CLASSES, NUM_STEP, CLASSIFIER_RNN_CKPT,
+            self.input_size,
+            self.hidden_size,
+            self.num_layers,
+            self.drop_rate
+        )
 
-		if self.net_type == "cnn":
-			cnn1 = FeatureCNN(self.num_classes, "feature_cnn1", device="/gpu:0", eta=self.eta)
-			cnn1.build((128, 128, 3), load_weights=True)
+    def save(self, ckpt):
+        model = {
+            # "short_term": self.hidden[0],
+            # "long_term": self.hidden[1],
+            "state_dict": self.state_dict()
+        }
+        torch.save(model, ckpt)
+        print("Classifier was saved.")
 
-			self.cnn.append(cnn1)
+    def load(self, ckpt):
+        model = torch.load(ckpt)
+        # self.hidden = (model["short_term"], model["long_term"])
+        self.load_state_dict(model["state_dict"])
+        print("Classifier was loaded.")
 
-			cnn2 = FeatureCNN(self.num_classes, "feature_cnn2", device="/gpu:{}".format(num_gpu-1), eta=self.eta)
-			cnn2.build((128, 128, 3), load_weights=True)
+    def score(self, logps, y):
+        ps = torch.exp(logps)
+        _, topk = ps.topk(dim=1)
+        equal = topk == y.view(*topk.shape)
+        acc = torch.mean(equal.type(torch.FloatTensor))
+        return acc
 
-			self.cnn.append(cnn2)
+    def forward(self, x):
 
-			self.input_size = self.cnn_size * 2
+        n_b = x.size(0)
+        n_s = x.size(1)
+        n = n_b * n_s
 
-		elif self.net_type == "encoder":
-			encoder1 = StackedEncoder(self.ckpts_dir + "/encoder_FMD", device="/gpu:0", eta=[self.eta] * 3)
-			encoder1.build((128, 128, 3), load_weights=True)
+        x = x.view(n, 3, 128, 128)
 
-			self.encoders.append(encoder1)
+        # print(self.features(x))
+        x = self.features.get_features(x)
+        x = x.view(n_b, n_s, -1)
 
-			encoder2 = StackedEncoder(self.ckpts_dir + "/encoder_trash", device="/gpu:1", eta=[self.eta] * 3)
-			encoder2.build((128, 128, 3), load_weights=True)
+        # print(x.size())
 
-			self.encoders.append(encoder2)
+        x, hidden = self.classifier(x, None)
+        # self.hidden = (hidden[0].data, hidden[1].data)
 
-			self.input_size = self.encoded_size * 2
+        return x
 
-		self.rnn = ClassifierRNN(self.num_step, self.input_size, self.num_classes, self.ckpts_dir + "/rnn.ckpt", device="/gpu:0", eta=self.eta, batch_size=self.batch_size)
-		self.rnn.build(load_weights=False)
+    def predict(self, x):
+        with torch.no_grad():
+            x = self.forward(x)
+            ps = torch.exp(x)
+            print(ps)
+            cls_ps, top_k = ps.topk(1, dim=1)
+            return top_k.squeeze().data
 
-		print("Classifier building completed.")
+    def score(self, logps, y):
+        top_k = logps.topk(1, dim=1)[1]
+        equal = top_k == y.view(*top_k.shape)
+        score = torch.mean(equal.type(torch.FloatTensor))
+        return score
 
-	def load_weights(self):
-		self.rnn.load_weights()
-
-	def save(self):
-		self.rnn.save()
-
-	def fit(self, X_batch, Y_batch):
-
-		features = self._extract_feature(X_batch)
-		self.rnn.fit(features, Y_batch, 0.7)
-
-	def predict(self, X_data):
-		features = self._extract_feature(X_data)
-		preds = self.rnn.predict(features)
-		return preds
-
-	def compute_loss(self, X_batch, Y_batch):
-		features = self._extract_feature(X_batch)
-		loss = self.rnn.compute_loss(features, Y_batch)
-		return loss
-
-	def score(self, X_data, Y_data):
-		features = self._extract_feature(X_data)
-		score = self.rnn.score(features, Y_data)
-
-		return score
-
-	def _shuffle(self, X_data, Y_data):
-		n = X_data.shape[0]
-		r = np.arange(n)
-		np.random.shuffle(r)
-
-		X_shuffled = X_data[r]
-		Y_shuffled = Y_data[r]
-
-		return X_shuffled, Y_shuffled
-
-	def _next_batch(self, X_data, Y_data, b):
-		start = b * self.batch_size
-		end = min((b + 1) * self.batch_size, X_data.shape[0])
-
-		X_batch = X_data[start: end]
-		Y_batch = Y_data[start: end]
-
-		return X_batch, Y_batch
-
-	def _extract_feature(self, X_data):
-		"""
-
-		:param X_data: shape of (n, num_step, h, w, c)
-		:return:
-		"""
-		n = X_data.shape[0]
-
-		features = np.zeros((n, self.num_step, self.input_size))
-
-		for i in range(self.num_step):
-			lst1 = []
-			lst2 = []
-
-			if self.net_type == "cnn":
-				th1 = th.Thread(target=lambda lst, cnn, x: lst.append(cnn.transform(x)), args=(lst1, self.cnn[0], X_data[:, i, :, :, :]))
-				th2 = th.Thread(target=lambda lst, cnn, x: lst.append(cnn.transform(x)), args=(lst2, self.cnn[1], X_data[:, i, :, :, :]))
-				size = self.cnn_size
-				
-			elif self.net_type == "encoder":
-				th1 = th.Thread(target=lambda lst, enc, x: lst.append(enc.encode(x)), args=(lst1, self.encoders[0], X_data[:, i, :, :, :]))
-				th2 = th.Thread(target=lambda lst, enc, x: lst.append(enc.encode(x)), args=(lst2, self.encoders[1], X_data[:, i, :, :, :]))
-				size = self.encoded_size
-
-			th1.start()
-			th2.start()
-
-			th1.join()
-			th2.join()
-
-			features[:, i, : size] = lst1[0].reshape(n, size)
-			features[:, i, size :] = lst2[0].reshape(n, size)
-
-		return features

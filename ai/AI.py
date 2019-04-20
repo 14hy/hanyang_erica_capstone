@@ -1,66 +1,54 @@
-import sys
-import numpy as np
 
-sys.path.append(".")
+import sys
+import torch
+import numpy as np
+from torch import nn
+from torchvision import transforms
+from ai.TrashDetector import TrashDetector
+from ai.Classifier import Classifier
+
+THRESHOLD = 0.6
+
 
 class AI():
 
-	def __init__(self):
-		self.clf = None
+    def __init__(self):
+        self.classifier = None
+        self.trash_detector = None
 
-	def setup(self, num_step, num_classes):
-		"""
-		setup classifier.
-		create classifier.
+    def build(self):
+        self.classifier = Classifier(num_classes=4, drop_rate=0.5).cuda()
+        self.classifier.load("../ai/ckpts/classifier.pth")
+        for param in self.classifier.parameters():
+            param.requires_grad_(False)
 
-		Arguments:
-		----------
-		:num_step time step
-		:num_classes number of classes into which you want image to be classified
-		"""
+        self.classifier.eval()
 
-		from Classifier import Classifier
-		from ExistanceDetector import ExistanceDetector
+        self.trash_detector = TrashDetector(0.0).cuda()
+        self.trash_detector.load("../ai/ckpts/detector.pth")
+        for param in self.trash_detector.parameters():
+            param.requires_grad_(False)
 
-		self.trash_detector = ExistanceDetector("/gpu:1", "ckpts/detector.ckpt")
-		self.trash_detector.build()
-		self.trash_detector.load_weights()
+        self.trash_detector.eval()
 
-		self.clf = Classifier(num_step=num_step, num_classes=num_classes, net_type="encoder")
-		self.clf.build(num_gpu=2)
-		self.clf.load_weights()
+    def predict(self, images):
+        images = (images.astype(np.float32) - 128) / 256 + 0.5
+        print(images.shape, images.min(), images.max())
 
-	def detect_trash(self, images):
-		"""
-		Arguments:
-		----------
-		:images (n, 128, 128, 3)
-		"""
+        torch_images = torch.FloatTensor(images).cuda()
+        
+        with torch.no_grad():
+            preds = self.trash_detector.predict(torch_images)
+            print(preds)
+            if preds.float().mean() > THRESHOLD:
+                print("This is a trash!")
+                torch_images = torch_images.unsqueeze(dim=0)
+                pred = self.classifier.predict(torch_images)
+                return int(pred)
+            else:
+                print("This is not a trash.")
+                return -1
 
-		assert(len(images.shape) == 4)
-
-		predictions = self.trash_detector.predict(images)
-
-		if np.mean(predictions) > 0.6:
-			return True
-		else:
-			return False
-
-	def classify(self, images):
-		"""
-		Arguments:
-		----------
-		:images (1, num_step, 128, 128, 3)
-
-		Returns:
-		--------
-		:preds prediction of image
-		"""
-
-		assert(len(images.shape) == 5)
-
-		predictions = self.clf.predict(images)
-		pred = np.argmax(predictions, axis=1)[0]
-
-		return pred
-
+            # torch_images = torch_images.unsqueeze(dim=0)
+            # pred = self.classifier.predict(torch_images)
+            # return int(pred)
