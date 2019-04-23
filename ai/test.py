@@ -8,7 +8,7 @@ from torchvision import transforms
 
 sys.path.append("../")
 
-from ai.prepare_data import rnn_data2, rnn_data, image_loader
+from ai.prepare_data import rnn_data2, rnn_data, image_loader_trash
 
 TRASH_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/train"
 TRASH_DATA_PATH2 = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata2/train"
@@ -19,7 +19,7 @@ CKPT = "ckpts/classifier.pth"
 
 def test_image_data():
 #     train_loader = rnn_data(TRASH_DATA_PATH, BATCH_SIZE, "train")
-    train_loader = image_loader(BATCH_SIZE, True)
+    train_loader = image_loader_trash(BATCH_SIZE, True)
 
     x, y = next(iter(train_loader))
 
@@ -147,8 +147,8 @@ def test_encoder():
         plt.show()
 
 
-# test_image_data()
+test_image_data()
 # test_siamese_image()
-test_rnn_data()
+# test_rnn_data()
 # test_classifier()
 # test_encoder()

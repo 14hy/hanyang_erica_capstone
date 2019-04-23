@@ -3,9 +3,9 @@ import torch
 from torch import nn
 
 try:
-    from features.FeatureCNNv2 import FeatureCNN
+    from features.FeatureCNN import FeatureCNN
 except:
-    from ai_torch_ver.features.FeatureCNNv2 import FeatureCNN
+    from ai.features.FeatureCNN import FeatureCNN
 
 
 class SiameseNet(nn.Module):

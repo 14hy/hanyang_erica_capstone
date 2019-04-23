@@ -63,7 +63,10 @@ def train_feature_cnn():
             loss = criterion(logps, y_batch)
 
             train_loss += loss.item()
-            train_acc += score(logps, y_batch).item()
+            with torch.no_grad():
+                model.eval()
+                train_acc += score(logps, y_batch).item()
+                model.train()
             cnt += 1
 
             optimizer.zero_grad()

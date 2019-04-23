@@ -59,11 +59,12 @@ def image_loader_trash(batch_size, train=True):
             cat = cats[index]
 
             img = Image.open(f).resize((128, 128))
+            img = img.convert("RGB")
             angle = np.random.randn() * 15
             img = img.rotate(angle)
 
             if np.random.rand() > 0.4:
-                noise = np.random.normal(0, np.random.randint(0, 15), img.size)
+                noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
                 img = np.array(img) + noise.reshape(*noise.shape, 1)
             else:
                 img = np.array(img)
@@ -115,11 +116,12 @@ def image_loader_detector(batch_size, train=True):
             cat = cats[index]
 
             img = Image.open(f).resize((128, 128))
+            img = img.convert("RGB")
             angle = np.random.randn() * 15
             img = img.rotate(angle)
 
             if np.random.rand() > 0.4:
-                noise = np.random.normal(0, np.random.randint(0, 15), img.size)
+                noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
                 img = np.array(img) + noise.reshape(*noise.shape, 1)
             else:
                 img = np.array(img)
@@ -197,11 +199,12 @@ def rnn_data2(batch_size, train=True):
                 # step += 1
 
                 img = Image.open(f).resize((128, 128))
+                img = img.convert("RGB")
                 r = np.random.randn() * 20
                 img = img.rotate(r)
 
                 if np.random.rand() > 0.4:
-                    noise = np.random.normal(0, np.random.randint(0, 15), img.size)
+                    noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
                     img = np.array(img) + noise.reshape(*noise.shape, 1)
 
                 img = np.array(img)
@@ -217,7 +220,7 @@ def rnn_data2(batch_size, train=True):
 
 
 def rnn_data(batch_size, train=True):
-    loader = image_loader(512, train=train)
+    loader = image_loader_trash(512, train=train)
 
     for x_batch, y_batch in loader:
         for i in range(30):
@@ -259,7 +262,7 @@ def read_nothing_list():
 
 
 def siamese_data_loader(batch_size, train=True):
-    loader = image_loader(128, train)
+    loader = image_loader_trash(128, train)
 
     for imgs, lbls in loader:
         imgs = imgs.numpy()
@@ -307,28 +310,3 @@ def siamese_data_loader(batch_size, train=True):
             y_neg_batch = torch.LongTensor(y_neg_batch)
 
             yield x_src_batch, y_src_batch, x_pos_batch, y_pos_batch, x_neg_batch, y_neg_batch
-
-
-def get_image_loader(data_dir, batch_size):
-    transform = transforms.Compose([
-        transforms.Resize((128, 128)),
-        transforms.RandomHorizontalFlip(0.5),
-        # transforms.RandomVerticalFlip(0.5),
-        transforms.ToTensor()
-    ])
-
-    dataset = torch.utils.data.ImageFolder(data_dir, transform=transform)
-
-    n = len(dataset)
-    indices = np.arange(n)
-    np.random.shuffle(indices)
-
-    train_indices = indices[:int(n*0.7)]
-    valid_indices = indices[int(n*0.7):int(n*0.85)]
-    test_indices = indices[int(n*0.85):]
-
-    train_loader = torch.utils.data.DataLoader(dataset, sampler=SubsetRandomSampler(train_indices))
-    valid_loader = torch.utils.data.DataLoader(dataset, sampler=SubsetRandomSampler(valid_indices))
-    test_loader = torch.utils.data.DataLoader(dataset, sampler=SubsetRandomSampler(test_indices))
-
-    return train_loader, valid_loader, test_loader

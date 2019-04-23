@@ -18,7 +18,7 @@ class AI():
 
     def build(self):
         self.classifier = Classifier(num_classes=4, drop_rate=0.5).cuda()
-        self.classifier.load("../ai/ckpts/classifier.pth")
+        self.classifier.load("../ai/ckpts/classifier1.pth")
         for param in self.classifier.parameters():
             param.requires_grad_(False)
 

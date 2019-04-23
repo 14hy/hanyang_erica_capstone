@@ -7,9 +7,9 @@ from ai.ClassifierRNN import ClassifierRNN
 
 # FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
 # FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
-FEATURE_CNN_CKPT = "../ai/ckpts/feature_cnn.pth"
+FEATURE_CNN_CKPT = "../ai/ckpts/feature_cnn_train.pth"
 # CLASSIFIER_RNN_CKPT = "D:/ckpts/capstone/torch/classifier_rnn.pth"
-CLASSIFIER_RNN_CKPT = "../ai/ckpts/classifier_rnn.pth"
+CLASSIFIER_RNN_CKPT = "../ai/ckpts/classifier1.pth"
 NUM_CLASSES = 4
 NUM_STEP = 8
 
@@ -64,6 +64,7 @@ class Classifier(nn.Module):
         return acc
 
     def forward(self, x):
+        self.features.eval()
 
         n_b = x.size(0)
         n_s = x.size(1)
