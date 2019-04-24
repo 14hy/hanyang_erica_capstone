@@ -10,11 +10,11 @@ from ai.features.FeatureCNN import FeatureCNN
 from ai.prepare_data import image_loader_trash
 
 CKPT = "ckpts/feature_cnn_train.pth"
-# CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
-TRASH_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/train"
-ETA = 3e-4
+# CKPT = "ckpts/feature_cnn.pth"
+TRASH_DATA_PATH = "capstonedata/train"
+ETA = 1e-3
 BATCH_SIZE = 128
-EPOCHS = 120
+EPOCHS = 80
 DROP_RATE = 0.5
 NUM_CLASSES = 4
 
@@ -31,7 +31,7 @@ def train_feature_cnn():
     
     device = torch.device("cuda:0")
     cnn = FeatureCNN(NUM_CLASSES, DROP_RATE)
-    # cnn.load(CKPT)
+    cnn.load(CKPT)
 
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(cnn, device_ids=[0, 1]).to(device)
@@ -39,7 +39,7 @@ def train_feature_cnn():
         model = cnn.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=ETA)
+    optimizer = optim.Adam(model.parameters(), lr=ETA, weight_decay=1e-2)
 
     min_val_loss = np.inf
 

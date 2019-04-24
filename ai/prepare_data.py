@@ -11,14 +11,13 @@ import os
 
 NUM_CLASSES = 4
 NUM_STEP = 8
-NOTHING_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/total/nothing"
-TRAIN_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/train"
-VALID_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/valid"
-TRAIN_PATH2 = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata2/train"
-VALID_PATH2 = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata2/valid"
+TRAIN_PATH = "data/trash1/train"
+VALID_PATH = "data/trash1/valid"
+TRAIN_PATH2 = "data/trash2/train"
+VALID_PATH2 = "data/trash2/valid"
 
-DETECTOR_TRAIN_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/detector/train"
-DETECTOR_VALID_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/detector/valid"
+DETECTOR_TRAIN_PATH = "data/detector/train"
+DETECTOR_VALID_PATH = "data/detector/valid"
 
 
 def image_loader_trash(batch_size, train=True):
@@ -69,7 +68,7 @@ def image_loader_trash(batch_size, train=True):
             else:
                 img = np.array(img)
 
-            img = (img.astype(np.float32) - 128) / 256 + 0.5
+            img = (img.astype(np.float32) - 128) / 256
             img = img.transpose(2, 0, 1)
 
             x_batch[i - start] = img
@@ -126,7 +125,7 @@ def image_loader_detector(batch_size, train=True):
             else:
                 img = np.array(img)
 
-            img = (img.astype(np.float32) - 128) / 256 + 0.5
+            img = (img.astype(np.float32) - 128) / 256
             img = img.transpose(2, 0, 1)
 
             x_batch[i - start] = img
@@ -208,7 +207,7 @@ def rnn_data2(batch_size, train=True):
                     img = np.array(img) + noise.reshape(*noise.shape, 1)
 
                 img = np.array(img)
-                img = (img.astype(np.float32) - 128) / 256 + 0.5
+                img = (img.astype(np.float32) - 128) / 256
 
                 x_batch[i, step] = img.transpose(2, 0, 1)
                 step += 1
