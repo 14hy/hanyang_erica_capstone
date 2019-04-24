@@ -5,3 +5,4 @@ ai/features/__pycache__/
 ai/server/__pycache__/
 ai/server/test/
 .vscode/
+ai/data/
