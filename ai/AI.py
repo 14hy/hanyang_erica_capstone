@@ -32,7 +32,7 @@ class AI():
         self.trash_detector.eval()
 
     def predict(self, images):
-        images = (images.astype(np.float32) - 128) / 256 + 0.5
+        images = (images.astype(np.float32) - 128) / 256
         print(images.shape, images.min(), images.max())
 
         torch_images = torch.FloatTensor(images).cuda()

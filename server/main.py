@@ -5,7 +5,8 @@ import cv2
 import threading as th
 from Server import Server
 
-host = "192.168.137.1"
+host = "34.80.12.180"
+#host = "192.168.137.1"
 port = 13333
 num_step = 8
 num_classes = 4

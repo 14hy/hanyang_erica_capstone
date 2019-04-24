@@ -5,13 +5,7 @@ import numpy as np
 from TrashDetector import TrashDetector
 from prepare_data import image_loader_detector
 
-VM = False
-if VM:
-    DATA_PATH = "/home/jylee/datasets/caps"
-    CKPT = "ckpts/detector.pth"
-else:
-    DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/detector"
-    CKPT = "ckpts/detector.pth"
+CKPT = "ckpts/detector.pth"
 ETA = 3e-4
 BATCH_SIZE = 128
 EPOCHS = 25
@@ -36,7 +30,7 @@ def train_detector_all():
         model = detector.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=ETA)
+    optimizer = optim.Adam(model.parameters(), lr=ETA, weight_decay=0.1)
 
     min_val_loss = np.inf
 
