@@ -1,129 +1,125 @@
-import cv2
+
+import torch
+from torch import optim, nn
 import numpy as np
-import matplotlib.pyplot as plt
-import threading as th
+import sys
 
-from datautils import trash_data_generator, FMD_data_generate
+sys.path.append("../")
 
-VM = True
+from ai.features.FeatureCNN import FeatureCNN
+from ai.prepare_data import image_loader_trash
 
-
-def train_FMD_cnn(drop_rate, gpu=0):
-	epochs = 150
-	batch_size = 128
-	num_classes = 6
-	if VM:
-		ckpt_file = "ckpts/feature_cnn.ckpt"
-	else:
-		ckpt_file = "D:/ckpts/capstone/feature_cnn.ckpt"
-	
-	from features.FeatureCNN import FeatureCNN
-
-	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-3)
-	cnn.build((128, 128, 3))
-
-	for e in range(epochs):
-
-		train_loader = iter(FMD_data_generate(VM, batch_size, "train"))
-		
-		train_loss = 0.0
-		cnt = 0
-
-		for X_batch, Y_batch in train_loader:
-			cnn.fit(X_batch, Y_batch, drop_rate)
-			train_loss += cnn.compute_loss(X_batch, Y_batch)
-
-			cnt += 1
-
-		train_loss /= cnt
-
-		valid_loader = iter(FMD_data_generate(VM, batch_size, "valid"))
-		valid_acc = 0.0
-		valid_loss = 0.0
-
-		cnt = 0
-
-		for X_batch, Y_batch in valid_loader:
-			valid_loss += cnn.compute_loss(X_batch, Y_batch)
-			valid_acc += cnn.score(X_batch, Y_batch)
-
-			cnt += 1
-
-		valid_loss /= cnt
-		valid_acc /= cnt
-
-		print("=== FMD  ===")
-		print("Epochs {}/{}".format(e+1, epochs))
-		print("Train loss: {:.6f}".format(train_loss))
-		print("Valid loss: {:.6f}".format(valid_loss))
-		print("Valid acc: {:.6f}".format(valid_acc))
-
-	cnn.save()
-
-def train_trash_cnn(drop_rate, gpu=0):
-	epochs = 150
-	batch_size = 128
-	num_classes = 4
-	drop_rate = 0.5
-
-	if VM:
-		ckpt_file = "ckpts/capstone/feature_cnn.ckpt"
-	else:
-		ckpt_file = "D:/ckpts/capstone/feature_cnn.ckpt"
-
-	from features.FeatureCNN import FeatureCNN
-
-	cnn = FeatureCNN(num_classes, ckpt_file, f"/gpu:{gpu}", batch_size=batch_size, eta=1e-2)
-	cnn.build((128, 128, 3))
-
-	for e in range(epochs):
-		train_loader = iter(trash_data_generator(VM, batch_size, "train"))
-
-		for X_batch, Y_batch, _ in train_loader:
-			cnn.fit(X_batch, Y_batch, drop_rate)
-
-		train_loader = iter(trash_data_generator(VM, batch_size, "train"))
-		train_loss = 0.0
-		train_acc = 0.0
-
-		cnt = 0
-		for X_batch, Y_batch, _ in train_loader:
-			train_loss += cnn.compute_loss(X_batch, Y_batch)
-			train_acc += cnn.score(X_batch, Y_batch)
-			cnt += 1
+CKPT = "ckpts/feature_cnn_train.pth"
+# CKPT = "ckpts/feature_cnn.pth"
+TRASH_DATA_PATH = "capstonedata/train"
+ETA = 1e-3
+BATCH_SIZE = 128
+EPOCHS = 80
+DROP_RATE = 0.5
+NUM_CLASSES = 4
 
 
-		train_loss /= cnt
-		train_acc /= cnt
+def score(logps, labels):
+    ps = torch.exp(logps)
+    cls_ps, top_k = ps.topk(1, dim=1)
+    equal = top_k == labels.view(*top_k.shape)
+    acc = torch.mean(equal.type(torch.FloatTensor))
+    return acc
 
-		val_loader = iter(trash_data_generator(VM, batch_size, "valid"))
-		val_loss = 0.0
-		val_acc = 0.0
 
-		cnt = 0
-		for X_batch, Y_batch, _ in val_loader:
-			val_loss += cnn.compute_loss(X_batch, Y_batch)
-			val_acc += cnn.score(X_batch, Y_batch)
-			cnt += 1
+def train_feature_cnn():
+    
+    device = torch.device("cuda:0")
+    cnn = FeatureCNN(NUM_CLASSES, DROP_RATE)
+    cnn.load(CKPT)
 
-		val_loss /= cnt
-		val_acc /= cnt
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(cnn, device_ids=[0, 1]).to(device)
+    else:
+        model = cnn.to(device)
 
-		print("=== trash ===")
-		print(f"Epoch {e+1}/{epochs}")
-		print(f"Train loss: {train_loss:.6f}")
-		print(f"Train acc: {train_acc:.6f}")
-		print(f"Val loss: {val_loss:.6f}")
-		print(f"Val acc: {val_acc:.6f}")
+    criterion = nn.NLLLoss()
+    optimizer = optim.Adam(model.parameters(), lr=ETA, weight_decay=1e-2)
 
-	cnn.save()
+    min_val_loss = np.inf
+
+    # train_loader, valid_loader, test_loader = image_loader(TRASH_DATA_PATH, BATCH_SIZE)
+
+    for e in range(EPOCHS):
+        # 테스트시에 사진이랑 트레이닝 데이터 사진 RGB별로 평균픽셀값 비교해보기
+        # min max normal 말고 standardize가 더 나을 수도.
+        
+        train_loss = 0.0
+        train_acc = 0.0
+        cnt = 0
+        train_loader = image_loader_trash(BATCH_SIZE, train=True)
+        valid_loader = image_loader_trash(BATCH_SIZE, train=False)
+
+        for x_batch, y_batch in train_loader:
+            x_batch = x_batch.to(device)
+            y_batch = y_batch.to(device)
+
+            logps = model(x_batch)
+            loss = criterion(logps, y_batch)
+
+            train_loss += loss.item()
+            with torch.no_grad():
+                model.eval()
+                train_acc += score(logps, y_batch).item()
+                model.train()
+            cnt += 1
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+        train_loss /= cnt
+        train_acc /= cnt
+
+        with torch.no_grad():
+            model.eval()
+
+            val_loss = 0.0
+            val_acc = 0.0
+            cnt = 0
+
+            for x_batch, y_batch in valid_loader:
+                x_batch = x_batch.to(device)
+                y_batch = y_batch.to(device)
+
+                logps = model(x_batch)
+                loss = criterion(logps, y_batch)
+
+                val_loss += loss.item()
+                val_acc += score(logps, y_batch)
+
+                cnt += 1
+
+            val_loss /= cnt
+            val_acc /= cnt
+
+            print(f"Epochs {e+1}/{EPOCHS}")
+            print(f"Train loss: {train_loss:.6f}")
+            print(f"Train acc: {train_acc:.6f}")
+            print(f"Valid loss: {val_loss:.6f}")
+            print(f"Valid acc: {val_acc:.6f}")
+
+            if min_val_loss > val_loss:
+                min_val_loss = val_loss
+                if type(model) is nn.DataParallel:
+                    model.module.save(CKPT)
+                else:
+                    model.save(CKPT)
+                # state_dict = model.state_dict()
+                # torch.save(state_dict, CKPT)
+
+            model.train()
+
+    # if type(model) is nn.DataParallel:
+    #     model.module.save(CKPT)
+    # else:
+    #     model.save(CKPT)
+
 
 if __name__ == "__main__":
-	t1 = th.Thread(target=train_FMD_cnn, args=(0.3, 0))
-	t2 = th.Thread(target=train_trash_cnn, args=(0.3, 1))
-
-	t1.start()
-	t2.start()
-
-	t1.join()
-	t2.join()
+    train_feature_cnn()

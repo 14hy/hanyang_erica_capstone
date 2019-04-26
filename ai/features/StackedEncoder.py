@@ -1,73 +1,69 @@
-import numpy as np
-import sys
+import torch
+from torch import nn
+try:
+    from features.AutoEncoder import AutoEncoder
+except:
+    from ai_torch_ver.features.AutoEncoder import AutoEncoder
 
-sys.path.append(".")
+# CKPTS = [
+#     "ckpts/encoder1.pth",
+#     "ckpts/encoder2.pth",
+#     "ckpts/encoder3.pth",
+# ]
 
-from Encoder import Encoder
 
+class StackedEncoder(nn.Module):
 
-class StackedEncoder():
+    def __init__(self, trainable=[True, True, True]):
+        super(StackedEncoder, self).__init__()
 
-	def __init__(self, ckpt_file, device, batch_size=[128, 128, 128], eta=[1e-3, 1e-3, 1e-3]):
-		self.device = device
-		self.batch_size = batch_size
-		self.ckpt_file = ckpt_file
-		self.eta = eta
-		self.encoders = []
-		self.shapes = []
+        self.encoder1 = AutoEncoder(3)
+        self.encoder2 = AutoEncoder(32)
+        self.encoder3 = AutoEncoder(32)
 
-	def build(self, shape, num_stack=3, load_weights=False):
+        self.encoders = [
+            self.encoder1,
+            self.encoder2,
+            self.encoder3,
+        ]
 
-		h, w, c = shape
-		self.shapes.append((h, w, c))
+        for i in range(3):
+            if not trainable[i]:
+                for param in self.encoders[i].parameters():
+                    param.requires_grad_(False)
+                # self.encoders[i].load(CKPTS[i])
 
-		h = int(np.ceil(h / 4))
-		w = int(np.ceil(w / 4))
-		c = 128
-		self.shapes.append((h, w, c))
+    def forward(self, x, index=2):
+        encoded = x
 
-		h = int(np.ceil(h / 4))
-		w = int(np.ceil(w / 4))
-		c = 128
-		self.shapes.append((h, w, c))
+        for i in range(0, index+1):
+            encoded, decoded, _ = self.encoders[i](encoded)
 
-		for i in range(num_stack):
-			enc = Encoder("{}{}.ckpt".format(self.ckpt_file, i+1), self.device,
-			              0.01, self.batch_size[i], self.eta[i])
-			enc.build(self.shapes[i], load_weights)
+        return encoded, decoded
 
-			self.encoders.append(enc)
+    def train_step(self, x, index, optimizer):
+        origin = x
+        encoded = None
+        decoded = None
+        kl = None
 
-	def fit(self, generator_fn, index, epochs=[300, 300, 300]):
-		for i in range(0, index[0]):
-			self.encoders[i].load_weights()
+        with torch.no_grad():
+            for i in range(0, index):
+                encoded, decoded, kl = self.encoders[i](origin)
+                origin = encoded
 
-		for i in index:
-			enc = self.encoders[i]
+        encoded, decoded, kl = self.encoders[index](origin)
+        loss = self.encoders[index].loss_fn(origin, decoded, kl)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-			for e in range(epochs[i]):
-				generator = iter(generator_fn(128))
-				train_loss = 0.0
-				cnt = 0
-				for X_batch in generator:
-					X_encoded = X_batch
-					for j in range(i):
-						X_encoded = self.encoders[j].encode(X_encoded)
-					enc.fit(X_encoded)
-					train_loss += enc.compute_loss(X_encoded)
-					cnt += 1
+        return loss.item()
 
-				train_loss /= cnt
+    def save(self, ckpt):
+        torch.save(self.state_dict(), ckpt)
+        print("Stacked encoder was saved.")
 
-				print("Epochs {}/{}".format(e+1, epochs[i]))
-				print("Train loss: {:.6f}".format(train_loss))
-
-			enc.save()
-
-	def encode(self, X_data):
-		X_encoded = X_data
-
-		for i in range(len(self.encoders)):
-			X_encoded = self.encoders[i].encode(X_encoded)
-
-		return X_encoded
+    def load(self, ckpt):
+        self.load_state_dict(torch.load(ckpt))
+        print("Stacked encoder was loaded.")

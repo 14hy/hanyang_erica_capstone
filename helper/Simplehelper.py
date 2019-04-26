@@ -16,7 +16,7 @@ def capture(cap):
 		cv2.waitKey(10)
 
 def main(args):
-	cap = cv2.VideoCapture(1)
+	cap = cv2.VideoCapture(0)
 
 	cur_index = 1
 

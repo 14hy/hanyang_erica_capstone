@@ -1,190 +1,124 @@
-import tensorflow as tf
-import numpy as np
+import torch
+import torch.nn.functional as F
+from torch import nn
 
 
-class FeatureCNN():
+class FeatureCNN(nn.Module):
 
-	def __init__(self, num_classes, ckpt_file, device, eta=1e-3, batch_size=128):
-		self.graph = None
-		self.sess = None
-		self.eta = eta
-		self.num_classes = num_classes
-		self.device = device
-		self.batch_size = batch_size
-		self.ckpt_file = ckpt_file
-		self.saver = None
+    def __init__(self, num_classes, drop_rate, load=True):
+        super().__init__()
 
-	def __del__(self):
-		if self.sess:
-			self.sess.close()
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(3, 32, (3, 3), stride=1, padding=1), # 128
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0), # 64
 
-	def build(self, shape, load_weights=False):
-		self.graph = tf.Graph()
+            nn.Conv2d(32, 32, (3, 3), stride=1, padding=1), # 64
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0), # 32
 
-		print("Building feature CNN...")
+            nn.Conv2d(32, 32, (3, 3), stride=1, padding=1), # 32
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0), # 16
 
-		with tf.device(self.device):
-			with self.graph.as_default():
-				self.X, self.Y, self.keep_prob = self._init_placeholder(shape)
-				self.feature_map, logits = self._build_network(self.X, self.keep_prob)
-				self.loss = self._loss_function(logits, self.Y)
-				self.accuracy = self._accuracy(logits, self.Y)
+            nn.Conv2d(32, 32, (3, 3), stride=1, padding=1), # 16
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0) # 8
+        )
+        
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(3, 32, (7, 7), stride=1, padding=3), # 128
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0), # 64
 
-				optimizer = tf.train.AdamOptimizer(learning_rate=self.eta)
-				self.train_op = optimizer.minimize(self.loss)
+            nn.Conv2d(32, 32, (7, 7), stride=1, padding=3), # 64
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0), # 32
 
-				self.sess = tf.Session()
-				self.sess.run(tf.global_variables_initializer())
+            nn.Conv2d(32, 32, (7, 7), stride=1, padding=3), # 32
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0), # 16
 
-		with self.graph.as_default():
-			self.saver = tf.train.Saver()
-			if load_weights:
-				self.saver.restore(self.sess, self.ckpt_file)
+            nn.Conv2d(32, 32, (7, 7), stride=1, padding=3), # 16
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # nn.Dropout(drop_rate),
+            nn.MaxPool2d((2, 2), stride=2, padding=0) # 8
+        )
 
-		print("Feature CNN building completed.")
+        self.features = nn.Sequential(
+            # nn.Linear(2*8*8*64, 256),
+            nn.Linear(2*8*8*32, 256),
+            nn.Sigmoid()
+        )
 
-	def fit(self, X_batch, Y_batch, keep_prob):
+        self.classifier = nn.Sequential(
+            nn.Dropout(drop_rate),
 
-		with self.graph.as_default():
+            nn.Linear(256, 32),
+            nn.LeakyReLU(),
+            nn.Dropout(drop_rate),
 
-			self.sess.run(self.train_op, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.keep_prob: keep_prob
-			})
+            nn.Linear(32, num_classes),
+            nn.LogSoftmax(dim=1)
+        )
 
-	def transform(self, X_data):
-		n, h, w, c = X_data.shape
-		num_batch = int(np.ceil(n / self.batch_size))
+    # def transform(self, x):
+    # 	x1 = self.conv1(x)
+    # 	x2 = self.conv2(x)
 
-		transformed = np.zeros((n, int(np.ceil(h / 32)), int(np.ceil(w / 32)), 128))
+    # 	x1 = x1.view(-1, 8*8*64)
+    # 	x2 = x2.view(-1, 8*8*64)
 
-		with self.graph.as_default():
-			for b in range(num_batch):
-				X_batch = self._next_batch(X_data, None, b)
+    # 	x = torch.cat([x1, x2], dim=1)
+    # 	x = self.features(x)
 
-				transformed[b * self.batch_size: b * self.batch_size + X_batch.shape[0]] = self.sess.run(self.feature_map,
-				                                                                                         feed_dict={
-					                                                                                         self.X: X_batch
-				                                                                                         })
+    # 	return x
 
+    def save(self, ckpt):
+        torch.save(self.state_dict(), ckpt)
+        print("Feature CNN was saved.")
 
-		return transformed
+    def load(self, ckpt):
+        self.load_state_dict(torch.load(ckpt))
+        print("Feature CNN was loaded.")
 
-	def save(self):
-		with self.graph.as_default():
-			self.saver.save(self.sess, self.ckpt_file)
+    def forward(self, x):
+        x = self.get_features(x)
+        x = self.classifier(x)
 
-	def score(self, X_data, Y_data):
-		n = X_data.shape[0]
-		num_batch = int(np.ceil(n / self.batch_size))
+        return x
 
-		scores = []
+    def get_features(self, x):
+        x1 = self.conv1(x)
+        x2 = self.conv2(x)
 
-		for b in range(num_batch):
-			X_batch, Y_batch = self._next_batch(X_data, Y_data, b)
+        x1 = x1.view(-1, 8*8*32)
+        x2 = x2.view(-1, 8*8*32)
 
-			acc = self.sess.run(self.accuracy, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.
-			})
+        x = torch.cat([x1, x2], dim=1)
+        x = self.features(x)
 
-			scores.append(acc)
+        return x
 
-		return np.mean(scores)
+    def predict(self, x):
+        logps = self.forward(x)
+        ps = torch.exp(x)
+        _, topk = ps.topk(1, dim=1)
 
-	def compute_loss(self, X_batch, Y_batch):
-		with self.graph.as_default():
-			loss = self.sess.run(self.loss, feed_dict={
-				self.X: X_batch, self.Y: Y_batch, self.keep_prob: 1.
-			})
-
-		return np.mean(loss)
-
-	def _shuffle(self, X_data, Y_data=None):
-		n = X_data.shape[0]
-		r = np.arange(n)
-		np.random.shuffle(r)
-
-		X_shuffled = X_data[r]
-		if Y_data is not None:
-			Y_shuffled = Y_data[r]
-			return X_shuffled, Y_shuffled
-
-		return X_shuffled
-
-	def _next_batch(self, X_data, Y_data=None, b=0):
-		start = b * self.batch_size
-		end = min((b + 1) * self.batch_size, X_data.shape[0])
-
-		X_batch = X_data[start: end]
-		if Y_data is not None:
-			Y_batch = Y_data[start: end]
-			return X_batch, Y_batch
-
-		return X_batch
-
-	def _build_network(self, X, keep_prob):
-		regularizer = tf.contrib.layers.l2_regularizer(scale=0.1)
-
-		with tf.name_scope("feature_cnn"):
-			layer1 = tf.layers.conv2d(X, 32, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
-			layer1 = tf.layers.batch_normalization(layer1)
-			layer1 = tf.nn.relu(layer1)
-
-			layer2 = tf.layers.max_pooling2d(layer1, (2, 2), strides=(2, 2), padding="SAME") # 64
-			
-			layer3 = tf.layers.conv2d(layer2, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
-			layer3 = tf.layers.batch_normalization(layer3)
-			layer3 = tf.nn.relu(layer3)
-
-			layer4 = tf.layers.max_pooling2d(layer3, (2, 2), strides=(2, 2), padding="SAME") # 32
-
-			layer5 = tf.layers.conv2d(layer4, 64, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
-			layer5 = tf.layers.batch_normalization(layer5)
-			layer5 = tf.nn.relu(layer5)
-
-			layer6 = tf.layers.max_pooling2d(layer5, (2, 2), strides=(2, 2), padding="SAME") # 16
-			
-			layer7 = tf.layers.conv2d(layer6, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
-			layer7 = tf.layers.batch_normalization(layer7)
-			layer7 = tf.nn.relu(layer7)
-
-			layer8 = tf.layers.max_pooling2d(layer7, (2, 2), strides=(2, 2), padding="SAME") # 8
-
-			layer9 = tf.layers.conv2d(layer8, 128, (3, 3), strides=(1, 1), padding="SAME", activation=None)#, kernel_regularizer=regularizer)
-			layer9 = tf.layers.batch_normalization(layer9)
-			layer9 = tf.nn.relu(layer9)
-
-			layer10 = tf.layers.max_pooling2d(layer9, (2, 2), strides=(2, 2), padding="SAME") # 4
-
-			layer11 = tf.layers.flatten(layer10)
-
-			layer12 = tf.layers.dense(layer11, 256, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
-			layer12 = tf.layers.dropout(layer12, keep_prob)
-			
-			layer13 = tf.layers.dense(layer12, 64, activation=tf.nn.relu)#, kernel_regularizer=regularizer)
-			layer13 = tf.layers.dropout(layer13, keep_prob)
-
-			layer14 = tf.layers.dense(layer13, self.num_classes, activation=None)#, kernel_regularizer=regularizer)
-
-		return layer10, layer14
-
-	def _loss_function(self, pred, Y):
-		with tf.name_scope("loss"):
-			crossentropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=pred, labels=Y)
-			loss = tf.reduce_mean(crossentropy)# + tf.losses.get_regularization_loss()
-
-		return loss
-
-	def _accuracy(self, pred, Y):
-		with tf.name_scope("accuracy"):
-			equality = tf.equal(tf.argmax(pred, axis=1), tf.argmax(Y, axis=1))
-			accuracy = tf.reduce_mean(tf.cast(equality, tf.float32))
-
-		return accuracy
-
-	def _init_placeholder(self, shape):
-		with tf.name_scope("in"):
-			X = tf.placeholder(tf.float32, shape=(None, *shape), name="X")
-			Y = tf.placeholder(tf.float32, shape=(None, self.num_classes), name="Y")
-			keep_prob = tf.placeholder(tf.float32, shape=(), name="keep_prob")
-
-		return X, Y, keep_prob
+        return topk.cpu().numpy().squeeze()
+        

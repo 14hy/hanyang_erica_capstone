@@ -1,0 +1,7 @@
+ai/ckpts
+ai/__pycache__/
+ai/.vscode/
+ai/features/__pycache__/
+ai/server/__pycache__/
+ai/server/test/
+.vscode/
