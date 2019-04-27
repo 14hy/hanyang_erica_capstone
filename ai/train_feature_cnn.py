@@ -31,7 +31,7 @@ def train_feature_cnn():
     
     device = torch.device("cuda:0")
     cnn = FeatureCNN(NUM_CLASSES, DROP_RATE)
-    cnn.load(CKPT)
+    # cnn.load(CKPT)
 
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(cnn, device_ids=[0, 1]).to(device)
@@ -39,7 +39,7 @@ def train_feature_cnn():
         model = cnn.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=ETA, weight_decay=1e-2)
+    optimizer = optim.Adam(model.parameters(), lr=ETA)
 
     min_val_loss = np.inf
 

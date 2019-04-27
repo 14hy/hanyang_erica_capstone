@@ -30,7 +30,7 @@ def train_detector_all():
         model = detector.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=ETA, weight_decay=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=ETA, weight_decay=1e-2)
 
     min_val_loss = np.inf
 

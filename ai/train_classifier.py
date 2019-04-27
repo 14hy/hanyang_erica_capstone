@@ -12,7 +12,7 @@ from ai.Classifier import Classifier
 # from features.FeatureCNN import FeatureCNN
 
 CKPT = "ckpts/classifier1.pth"
-ETA = 3e-5
+ETA = 3e-4
 BATCH_SIZE = 64
 EPOCHS = 30
 DROP_RATE = 0.5
@@ -67,7 +67,7 @@ def train_classifier():
     #     model = clf.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(clf.parameters(), lr=ETA, weight_decay=0.01)
+    optimizer = optim.Adam(clf.parameters(), lr=ETA, weight_decay=1e-2)
 
     min_val_loss = np.inf
 
