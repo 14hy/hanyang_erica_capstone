@@ -24,11 +24,12 @@ class MotorPublisher():
         self.ready = False
 
     def is_ready(self):
-        #return self.ready
-        return True
+        return self.ready
+        #return True
 
     def motor_done(self, req):
         if req.data is True:
+            rospy.loginfo("Motor done.")
             self.ready = True
             return {"success": True,
                     "message": "True"}

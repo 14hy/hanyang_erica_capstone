@@ -29,24 +29,24 @@ def recv_result(client):
 
 def motor_control(result, control_queue):
 
-    if result == 0:
+    if result == -1:
         return
-    elif result == 1:
+    elif result == 0:
         control_queue.append([BOX_MOTOR, 0, 250])
         control_queue.append([SUPPORT_MOTOR, 0, 100])
         control_queue.append([SUPPORT_MOTOR, 1, 100])
         control_queue.append([BOX_MOTOR, 1, 250])
+    elif result == 1:
+        control_queue.append([BOX_MOTOR, 0, 125])
+        control_queue.append([SUPPORT_MOTOR, 0, 100])
+        control_queue.append([SUPPORT_MOTOR, 1, 100])
+        control_queue.append([BOX_MOTOR, 1, 125])
     elif result == 2:
-        control_queue.append([BOX_MOTOR, 0, 125])
+        control_queue.append([BOX_MOTOR, 1, 125])
         control_queue.append([SUPPORT_MOTOR, 0, 100])
         control_queue.append([SUPPORT_MOTOR, 1, 100])
-        control_queue.append([BOX_MOTOR, 1, 125])
+        control_queue.append([BOX_MOTOR, 0, 125])
     elif result == 3:
-        control_queue.append([BOX_MOTOR, 1, 125])
-        control_queue.append([SUPPORT_MOTOR, 0, 100])
-        control_queue.append([SUPPORT_MOTOR, 1, 100])
-        control_queue.append([BOX_MOTOR, 0, 125])
-    elif result == 4:
         control_queue.append([BOX_MOTOR, 1, 250])
         control_queue.append([SUPPORT_MOTOR, 0, 100])
         control_queue.append([SUPPORT_MOTOR, 1, 100])
@@ -114,6 +114,7 @@ def main(argv):
 
         if cnt == NUM_STEP:
             wait_for_result = True
+            client.ready = False
 
         rate.sleep()
 
