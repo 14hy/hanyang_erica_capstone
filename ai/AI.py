@@ -18,14 +18,14 @@ class AI():
 
     def build(self):
         self.classifier = Classifier(num_classes=4, drop_rate=0.5).cuda()
-        self.classifier.load("../ai/ckpts/classifier1.pth")
+        self.classifier.load("../ai/ckpts/classifier2.pth")
         for param in self.classifier.parameters():
             param.requires_grad_(False)
 
         self.classifier.eval()
 
         self.trash_detector = TrashDetector(0.0).cuda()
-        self.trash_detector.load("../ai/ckpts/detector.pth")
+        self.trash_detector.load("../ai/ckpts/detector1.pth")
         for param in self.trash_detector.parameters():
             param.requires_grad_(False)
 
