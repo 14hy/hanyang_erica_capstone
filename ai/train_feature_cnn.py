@@ -9,10 +9,9 @@ sys.path.append("../")
 from ai.features.FeatureCNN import FeatureCNN
 from ai.prepare_data import image_loader_trash
 
-CKPT = "ckpts/feature_cnn_train.pth"
+CKPT = "ckpts/feature_cnn_train2.pth"
 # CKPT = "ckpts/feature_cnn.pth"
-TRASH_DATA_PATH = "capstonedata/train"
-ETA = 1e-3
+ETA = 3e-4
 BATCH_SIZE = 128
 EPOCHS = 80
 DROP_RATE = 0.5
@@ -39,7 +38,7 @@ def train_feature_cnn():
         model = cnn.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=ETA)
+    optimizer = optim.Adam(model.parameters(), lr=ETA, weight_decay=1e-3)
 
     min_val_loss = np.inf
 

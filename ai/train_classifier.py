@@ -11,7 +11,7 @@ from ai.prepare_data import rnn_data, rnn_data2
 from ai.Classifier import Classifier
 # from features.FeatureCNN import FeatureCNN
 
-CKPT = "ckpts/classifier1.pth"
+CKPT = "ckpts/classifier2.pth"
 ETA = 3e-4
 BATCH_SIZE = 64
 EPOCHS = 30
@@ -59,7 +59,7 @@ def train_classifier():
 
     device = torch.device("cuda")
     clf = Classifier(NUM_CLASSES, drop_rate=DROP_RATE).to(device)
-    clf.load(CKPT)
+    # clf.load(CKPT)
 
     # if torch.cuda.device_count() > 1:
     #     model = nn.DataParallel(clf, device_ids=[0, 1], output_device=0).to(device)
@@ -67,13 +67,13 @@ def train_classifier():
     #     model = clf.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(clf.parameters(), lr=ETA, weight_decay=1e-2)
+    optimizer = optim.Adam(clf.parameters(), lr=ETA, weight_decay=3e-3)
 
     min_val_loss = np.inf
 
     for e in range(EPOCHS):
-        train_loader = rnn_data2(BATCH_SIZE, train=True)
-        valid_loader = rnn_data2(BATCH_SIZE, train=False)
+        train_loader = rnn_data(BATCH_SIZE, train=True)
+        valid_loader = rnn_data(BATCH_SIZE, train=False)
 
         train_loss = 0.0
         train_acc = 0.0

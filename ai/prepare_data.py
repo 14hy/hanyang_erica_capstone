@@ -6,7 +6,7 @@ import numpy as np
 import pathlib
 import matplotlib.pyplot as plt
 import cv2
-from PIL import Image
+from PIL import Image, ImageChops
 import os
 
 NUM_CLASSES = 4
@@ -66,9 +66,9 @@ def image_loader_trash(batch_size, train=True):
 
             if np.random.rand() > 0.6:
                 x_shift = np.random.randn() * 10
-                y_shift = np.random.randn() * 10
+                y_shift = np.random.randint(0, 10)
 
-                img = img.offset(x_shift, y_shift)
+                img = ImageChops.offset(img, int(x_shift), int(y_shift))
 
             if np.random.rand() > 0.4:
                 noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
@@ -131,9 +131,9 @@ def image_loader_detector(batch_size, train=True):
 
             if np.random.rand() > 0.6:
                 x_shift = np.random.randn() * 10
-                y_shift = np.random.randn() * 10
+                y_shift = np.random.randint(0, 10)
 
-                img = img.offset(x_shift, y_shift)
+                img = ImageChops.offset(img, int(x_shift), int(y_shift))
 
             if np.random.rand() > 0.4:
                 noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
@@ -222,9 +222,9 @@ def rnn_data2(batch_size, train=True):
 
                 if np.random.rand() > 0.6:
                     x_shift = np.random.randn() * 10
-                    y_shift = np.random.randn() * 10
+                    y_shift = np.random.randint(0, 10)
 
-                img = img.offset(x_shift, y_shift)
+                    img = ImageChops.offset(img, int(x_shift), int(y_shift))
 
                 if np.random.rand() > 0.4:
                     noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)

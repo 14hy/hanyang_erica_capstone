@@ -5,7 +5,7 @@ import numpy as np
 from TrashDetector import TrashDetector
 from prepare_data import image_loader_detector
 
-CKPT = "ckpts/detector.pth"
+CKPT = "ckpts/detector1.pth"
 ETA = 3e-4
 BATCH_SIZE = 128
 EPOCHS = 25
