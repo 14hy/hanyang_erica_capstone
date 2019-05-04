@@ -11,10 +11,10 @@ from ai.prepare_data import rnn_data, rnn_data2
 from ai.Classifier import Classifier
 # from features.FeatureCNN import FeatureCNN
 
-CKPT = "ckpts/classifier2.pth"
+CKPT = "ckpts/classifier3.pth"
 ETA = 3e-4
 BATCH_SIZE = 64
-EPOCHS = 30
+EPOCHS = 20
 DROP_RATE = 0.5
 NUM_CLASSES = 4
 
@@ -55,11 +55,11 @@ NUM_CLASSES = 4
 #     return features
 
 
-def train_classifier():
+def train_classifier_all():
 
     device = torch.device("cuda")
     clf = Classifier(NUM_CLASSES, drop_rate=DROP_RATE).to(device)
-    # clf.load(CKPT)
+    clf.load(CKPT)
 
     # if torch.cuda.device_count() > 1:
     #     model = nn.DataParallel(clf, device_ids=[0, 1], output_device=0).to(device)
@@ -67,13 +67,70 @@ def train_classifier():
     #     model = clf.to(device)
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(clf.parameters(), lr=ETA, weight_decay=3e-3)
+    optimizer = optim.Adam(clf.parameters(), lr=ETA, weight_decay=1e-3)
 
     min_val_loss = np.inf
 
     for e in range(EPOCHS):
-        train_loader = rnn_data(BATCH_SIZE, train=True)
-        valid_loader = rnn_data(BATCH_SIZE, train=False)
+        train_loader = rnn_data2(BATCH_SIZE, train=True)
+		#valid_loader = rnn_data2(BATCH_SIZE, train=False)
+
+        train_loss = 0.0
+        train_acc = 0.0
+
+        cnt = 0
+        for x_batch, y_batch in train_loader:
+            x_batch = x_batch.to(device)
+            y_batch = y_batch.to(device).long()
+            # print(y_batch)
+
+            logps = clf.forward(x_batch)
+            loss = criterion(logps, y_batch)
+            train_loss += loss.item()
+            # train_acc += score(logps, torch.max(y_batch, dim=1)[1])
+            # if torch.cuda.device_count() > 1:
+            #     train_acc += model.module.score(logps, y_batch)
+            # else:
+            #     train_acc += model.score(logps, y_batch)
+
+            with torch.no_grad():
+                train_acc += clf.score(logps, y_batch)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            cnt += 1
+
+        train_loss /= cnt
+        train_acc /= cnt
+
+        print(f"Epochs {e+1}/{EPOCHS}")
+        print(f"Train loss: {train_loss:.8f}")
+        print(f"Train acc: {train_acc:.6f}")
+
+    clf.save(CKPT)
+
+
+def train_classifier():
+
+    device = torch.device("cuda")
+    clf = Classifier(NUM_CLASSES, drop_rate=DROP_RATE).to(device)
+    clf.load(CKPT)
+
+    # if torch.cuda.device_count() > 1:
+    #     model = nn.DataParallel(clf, device_ids=[0, 1], output_device=0).to(device)
+    # else:
+    #     model = clf.to(device)
+
+    criterion = nn.NLLLoss()
+    optimizer = optim.Adam(clf.parameters(), lr=ETA)
+
+    min_val_loss = np.inf
+
+    for e in range(EPOCHS):
+        train_loader = rnn_data2(BATCH_SIZE, train=True)
+        valid_loader = rnn_data2(BATCH_SIZE, train=False)
 
         train_loss = 0.0
         train_acc = 0.0
@@ -142,4 +199,5 @@ def train_classifier():
             clf.train()
 
 
-train_classifier()
+if __name__ == "__main__":
+	train_classifier()
