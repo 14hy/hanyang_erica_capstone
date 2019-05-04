@@ -15,9 +15,46 @@ TRAIN_PATH = "data/trash1/train"
 VALID_PATH = "data/trash1/valid"
 TRAIN_PATH2 = "data/trash2/train"
 VALID_PATH2 = "data/trash2/valid"
+TOTAL_PATH = "data/trash1/total"
+TOTAL_PATH2 = "data/trash2/total"
 
 DETECTOR_TRAIN_PATH = "data/detector/train"
 DETECTOR_VALID_PATH = "data/detector/valid"
+
+
+def add_noise(img):
+
+    for i in range(3):
+        if np.random.rand() < 0.5:
+            mean = np.random.randint(0, 25)
+            std = np.random.randint(15, 75)
+            noise = np.random.normal(mean, std, img.size)
+            img = np.array(img).astype(np.float32) + noise.reshape(*noise.shape, 1)
+
+    return img
+
+
+def standardize(img):
+    img = (img.astype(np.float32) - 128) / 128
+    return img
+
+
+def random_transform(img):
+    if np.random.rand() < 0.5:
+        img = img.transpose(Image.FLIP_LEFT_RIGHT)
+    if np.random.rand() < 0.5:
+        img = img.transpose(Image.FLIP_TOP_BOTTOM)
+    if np.random.rand() < 0.3:
+        x_off = np.random.normal(0, 10)
+        img = ImageChops.offset(img, int(x_off), 0)
+    if np.random.rand() < 0.3:
+        y_off = np.random.normal(0, 10)
+        img = ImageChops.offset(img, 0, int(y_off))
+    if np.random.randn() < 0.3:
+        angle = np.random.normal(0, 5)
+        img = img.rotate(angle)
+
+    return img
 
 
 def image_loader_trash(batch_size, train=True):
@@ -60,23 +97,57 @@ def image_loader_trash(batch_size, train=True):
             img = Image.open(f).resize((128, 128))
             img = img.convert("RGB")
 
-            if np.random.rand() > 0.4:
-                angle = np.random.randn() * 20
-                img = img.rotate(angle)
+            random_transform(img)
+            add_noise(img)
+            standardize(img)
+            img = img.transpose(2, 0, 1)
 
-            if np.random.rand() > 0.6:
-                x_shift = np.random.randn() * 10
-                y_shift = np.random.randint(0, 10)
+            x_batch[i - start] = img
+            y_batch[i - start] = cat
 
-                img = ImageChops.offset(img, int(x_shift), int(y_shift))
+        yield torch.FloatTensor(x_batch), torch.LongTensor(y_batch)
 
-            if np.random.rand() > 0.4:
-                noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
-                img = np.array(img) + noise.reshape(*noise.shape, 1)
-            else:
-                img = np.array(img)
 
-            img = (img.astype(np.float32) - 128) / 256
+def image_loader_trash_total(batch_size):
+
+    path = TOTAL_PATH
+
+    categories = [
+        "can", "extra", "glass", "plastic"
+    ]
+
+    files = []
+    cats = []
+
+    for i, cat in enumerate(categories):
+        for f in pathlib.Path(os.path.join(path, cat).replace("\\", "/")).glob("*.jpg"):
+            files.append(str(f))
+            cats.append(i)
+
+    n = len(files)
+    n_batches = int(np.ceil(n / batch_size))
+
+    indices = np.arange(n)
+    np.random.shuffle(indices)
+
+    for b in range(n_batches):
+        start = b * batch_size
+        end = min((b+1) * batch_size, n)
+
+        x_batch = np.zeros((end - start, 3, 128, 128))
+        y_batch = np.zeros((end - start,))
+
+        for i in range(start, end):
+            index = indices[i]
+            f = files[index]
+            cat = cats[index]
+
+            img = Image.open(f).resize((128, 128))
+            img = img.convert("RGB")
+
+            random_transform(img)
+            add_noise(img)
+            standardize(img)
             img = img.transpose(2, 0, 1)
 
             x_batch[i - start] = img
@@ -125,23 +196,9 @@ def image_loader_detector(batch_size, train=True):
             img = Image.open(f).resize((128, 128))
             img = img.convert("RGB")
 
-            if np.random.rand() > 0.4:
-                angle = np.random.randn() * 20
-                img = img.rotate(angle)
-
-            if np.random.rand() > 0.6:
-                x_shift = np.random.randn() * 10
-                y_shift = np.random.randint(0, 10)
-
-                img = ImageChops.offset(img, int(x_shift), int(y_shift))
-
-            if np.random.rand() > 0.4:
-                noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
-                img = np.array(img) + noise.reshape(*noise.shape, 1)
-            else:
-                img = np.array(img)
-
-            img = (img.astype(np.float32) - 128) / 256
+            random_transform(img)
+            add_noise(img)
+            standardize(img)
             img = img.transpose(2, 0, 1)
 
             x_batch[i - start] = img
@@ -161,10 +218,14 @@ def korean_file_name_img(path):
 
 def rnn_data2(batch_size, train=True):
 
+    
     if train:
         path = TRAIN_PATH2
     else:
         path = VALID_PATH2
+    
+
+    #path = TOTAL_PATH2
 
     categories = [
         "can", "extra", "glass", "plastic"
@@ -216,22 +277,9 @@ def rnn_data2(batch_size, train=True):
                 img = Image.open(f).resize((128, 128))
                 img = img.convert("RGB")
 
-                if np.random.rand() > 0.4:
-                    angle = np.random.randn() * 20
-                    img = img.rotate(angle)
-
-                if np.random.rand() > 0.6:
-                    x_shift = np.random.randn() * 10
-                    y_shift = np.random.randint(0, 10)
-
-                    img = ImageChops.offset(img, int(x_shift), int(y_shift))
-
-                if np.random.rand() > 0.4:
-                    noise = np.random.normal(0, np.random.randint(0, np.random.randint(5, 25)), img.size)
-                    img = np.array(img) + noise.reshape(*noise.shape, 1)
-
-                img = np.array(img)
-                img = (img.astype(np.float32) - 128) / 256
+                random_transform(img)
+                add_noise(img)
+                standardize(img)
 
                 x_batch[i, step] = img.transpose(2, 0, 1)
                 step += 1
@@ -244,6 +292,7 @@ def rnn_data2(batch_size, train=True):
 
 def rnn_data(batch_size, train=True):
     loader = image_loader_trash(512, train=train)
+    #loader = image_loader_trash_total(512)
 
     for x_batch, y_batch in loader:
         for i in range(30):

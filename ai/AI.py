@@ -18,21 +18,21 @@ class AI():
 
     def build(self):
         self.classifier = Classifier(num_classes=4, drop_rate=0.5).cuda()
-        self.classifier.load("../ai/ckpts/classifier2.pth")
+        self.classifier.load("../ai/ckpts/classifier3.pth")
         for param in self.classifier.parameters():
             param.requires_grad_(False)
 
         self.classifier.eval()
 
         self.trash_detector = TrashDetector(0.0).cuda()
-        self.trash_detector.load("../ai/ckpts/detector1.pth")
+        self.trash_detector.load("../ai/ckpts/detector3.pth")
         for param in self.trash_detector.parameters():
             param.requires_grad_(False)
 
         self.trash_detector.eval()
 
     def predict(self, images):
-        images = (images.astype(np.float32) - 128) / 256
+        images = (images.astype(np.float32) - 128) / 128
         print(images.shape, images.min(), images.max())
 
         torch_images = torch.FloatTensor(images).cuda()
