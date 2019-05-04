@@ -24,11 +24,13 @@ DETECTOR_VALID_PATH = "data/detector/valid"
 
 def add_noise(img):
 
+    img = np.array(img)
+
     for i in range(3):
         if np.random.rand() < 0.5:
             mean = np.random.randint(0, 25)
             std = np.random.randint(15, 75)
-            noise = np.random.normal(mean, std, img.size)
+            noise = np.random.normal(mean, std, img.shape)
             img = np.array(img).astype(np.float32) + noise.reshape(*noise.shape, 1)
 
     return img
