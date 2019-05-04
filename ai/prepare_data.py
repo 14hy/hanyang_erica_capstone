@@ -29,7 +29,7 @@ def add_noise(img):
     for i in range(3):
         if np.random.rand() < 0.5:
             mean = np.random.normal(0, 15)
-            std = np.random.randint(15, 25)
+            std = np.random.normal(0, 10)
             noise = np.random.normal(int(mean), int(std), img.shape)
             img = img + noise
 
