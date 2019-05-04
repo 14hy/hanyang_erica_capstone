@@ -99,9 +99,9 @@ def image_loader_trash(batch_size, train=True):
             img = Image.open(f).resize((128, 128))
             img = img.convert("RGB")
 
-            random_transform(img)
-            add_noise(img)
-            standardize(img)
+            img = random_transform(img)
+            img = add_noise(img)
+            img = standardize(img)
             img = img.transpose(2, 0, 1)
 
             x_batch[i - start] = img
@@ -147,9 +147,9 @@ def image_loader_trash_total(batch_size):
             img = Image.open(f).resize((128, 128))
             img = img.convert("RGB")
 
-            random_transform(img)
-            add_noise(img)
-            standardize(img)
+            img = random_transform(img)
+            img = add_noise(img)
+            img = standardize(img)
             img = img.transpose(2, 0, 1)
 
             x_batch[i - start] = img
@@ -198,9 +198,9 @@ def image_loader_detector(batch_size, train=True):
             img = Image.open(f).resize((128, 128))
             img = img.convert("RGB")
 
-            random_transform(img)
-            add_noise(img)
-            standardize(img)
+            img = random_transform(img)
+            img = add_noise(img)
+            img = standardize(img)
             img = img.transpose(2, 0, 1)
 
             x_batch[i - start] = img
@@ -279,9 +279,9 @@ def rnn_data2(batch_size, train=True):
                 img = Image.open(f).resize((128, 128))
                 img = img.convert("RGB")
 
-                random_transform(img)
-                add_noise(img)
-                standardize(img)
+                img = random_transform(img)
+                img = add_noise(img)
+                img = standardize(img)
 
                 x_batch[i, step] = img.transpose(2, 0, 1)
                 step += 1
