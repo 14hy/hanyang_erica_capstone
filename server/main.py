@@ -5,7 +5,7 @@ import cv2
 import threading as th
 from Server import Server
 
-host = "34.80.12.180"
+host = "0.0.0.0"
 #host = "192.168.137.1"
 port = 13333
 num_step = 8
@@ -46,8 +46,8 @@ def main(args):
     ai.build()
 
     # debug
-    t = th.Thread(target=image_show)
-    t.start()
+    #t = th.Thread(target=image_show)
+    #t.start()
 
     try:
         while True:
@@ -80,6 +80,10 @@ def main(args):
 
             server.send_result(result)
 
+    except KeyboardInterrupt as e:
+        print(e)
+        print("Keyboard Interrupted.")
+
     except ValueError as e:
         print(e)
         print("Exception occurs. Server shutdown.")
@@ -88,6 +92,7 @@ def main(args):
         print(e)
         print("Exception occurs. Server shutdown.")
 
+    server.close()
     ok = False
     # t.join()
 

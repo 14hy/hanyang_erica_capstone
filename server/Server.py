@@ -16,6 +16,12 @@ class Server:
         if self.serv_sock is not None:
             self.serv_sock.close()
 
+    def close(self):
+        if self.clnt_conn is not None:
+            self.clnt_conn.close()
+        if self.serv_sock is not None:
+            self.serv_sock.close()
+
     def open(self, host, port):
         self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serv_sock.bind((host, port))
