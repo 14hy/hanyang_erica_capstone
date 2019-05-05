@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from features.FeatureCNNv2 import FeatureCNN
+from features.FeatureCNN import FeatureCNN
 import torch
-from prepare_data import image_loader
+from prepare_data import image_loader_trash
 from sklearn.decomposition import PCA
 
-FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
-DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/total"
+FEATURE_CNN_CKPT = "ckpts/feature_cnn_train3.pth"
+DATA_PATH = "data/trash1/train"
 BATCH_SIZE = 500
 
 
@@ -17,7 +17,7 @@ def main():
         cnn.load(FEATURE_CNN_CKPT)
         cnn.eval()
 
-        loader = iter(image_loader(DATA_PATH, BATCH_SIZE))
+        loader = iter(image_loader_trash(BATCH_SIZE, True))
         images, labels = next(loader)
 
         images = images.to(device)
