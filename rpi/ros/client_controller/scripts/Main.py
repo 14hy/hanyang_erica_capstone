@@ -8,6 +8,7 @@ import sys
 import threading as th
 import time
 
+#HOST =  "35.194.238.193"
 HOST = "34.80.12.180"
 #HOST = "192.168.137.1"
 PORT = 13333
@@ -33,25 +34,25 @@ def motor_control(result, control_queue):
     if result == -1:
         return
     elif result == 0:
-        control_queue.append([BOX_MOTOR, 0, 250])
-        control_queue.append([SUPPORT_MOTOR, 0, 100])
-        control_queue.append([SUPPORT_MOTOR, 1, 100])
-        control_queue.append([BOX_MOTOR, 1, 250])
+        control_queue.append([BOX_MOTOR, 0, 2250])
+        #control_queue.append([SUPPORT_MOTOR, 0, 100])
+        #control_queue.append([SUPPORT_MOTOR, 1, 100])
+        control_queue.append([BOX_MOTOR, 1, 2300])
     elif result == 1:
-        control_queue.append([BOX_MOTOR, 0, 125])
-        control_queue.append([SUPPORT_MOTOR, 0, 100])
-        control_queue.append([SUPPORT_MOTOR, 1, 100])
-        control_queue.append([BOX_MOTOR, 1, 125])
+        control_queue.append([BOX_MOTOR, 0, 1150])
+        #control_queue.append([SUPPORT_MOTOR, 0, 100])
+        #control_queue.append([SUPPORT_MOTOR, 1, 100])
+        control_queue.append([BOX_MOTOR, 1, 1175])
     elif result == 2:
-        control_queue.append([BOX_MOTOR, 1, 125])
-        control_queue.append([SUPPORT_MOTOR, 0, 100])
-        control_queue.append([SUPPORT_MOTOR, 1, 100])
-        control_queue.append([BOX_MOTOR, 0, 125])
+        control_queue.append([BOX_MOTOR, 1, 1150])
+        #control_queue.append([SUPPORT_MOTOR, 0, 100])
+        #control_queue.append([SUPPORT_MOTOR, 1, 100])
+        control_queue.append([BOX_MOTOR, 0, 1130])
     elif result == 3:
-        control_queue.append([BOX_MOTOR, 1, 250])
-        control_queue.append([SUPPORT_MOTOR, 0, 100])
-        control_queue.append([SUPPORT_MOTOR, 1, 100])
-        control_queue.append([BOX_MOTOR, 0, 250])
+        control_queue.append([BOX_MOTOR, 1, 2225])
+        #control_queue.append([SUPPORT_MOTOR, 0, 100])
+        #control_queue.append([SUPPORT_MOTOR, 1, 100])
+        control_queue.append([BOX_MOTOR, 0, 2180])
     else:
         rospy.loginfo("INVALID result " + str(result))
         return
