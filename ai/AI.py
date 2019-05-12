@@ -17,8 +17,8 @@ class AI():
         self.trash_detector = None
 
     def build(self):
-        self.classifier = Classifier(num_classes=4, drop_rate=0.5).cuda()
-        self.classifier.load("../ai/ckpts/classifier3.pth")
+        self.classifier = Classifier(num_classes=3, drop_rate=0.5).cuda()
+        self.classifier.load("../ai/ckpts/classifier4.pth")
         for param in self.classifier.parameters():
             param.requires_grad_(False)
 
@@ -32,7 +32,7 @@ class AI():
         self.trash_detector.eval()
 
     def predict(self, images):
-        images = (images.astype(np.float32) - 128) / 128
+        images = (images.astype(np.float32) - 128) / 256
         print(images.shape, images.min(), images.max())
 
         torch_images = torch.FloatTensor(images).cuda()

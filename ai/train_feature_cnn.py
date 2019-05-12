@@ -9,13 +9,13 @@ sys.path.append("../")
 from ai.features.FeatureCNN import FeatureCNN
 from ai.prepare_data import image_loader_trash, image_loader_trash_total
 
-CKPT = "ckpts/feature_cnn_train3.pth"
+CKPT = "ckpts/feature_cnn_train4.pth"
 # CKPT = "ckpts/feature_cnn.pth"
 ETA = 3e-4
 BATCH_SIZE = 128
 EPOCHS = 100
 DROP_RATE = 0.5
-NUM_CLASSES = 4
+NUM_CLASSES = 3
 
 
 def score(logps, labels):
@@ -30,7 +30,7 @@ def train_feature_cnn():
     
     device = torch.device("cuda:0")
     cnn = FeatureCNN(NUM_CLASSES, DROP_RATE)
-    cnn.load(CKPT)
+    #cnn.load(CKPT)
 
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(cnn, device_ids=[0, 1]).to(device)

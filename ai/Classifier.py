@@ -7,10 +7,10 @@ from ai.ClassifierRNN import ClassifierRNN
 
 # FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
 # FEATURE_CNN_CKPT = "ckpts/feature_cnn.pth"
-FEATURE_CNN_CKPT = "../ai/ckpts/feature_cnn_train3.pth"
+FEATURE_CNN_CKPT = "../ai/ckpts/feature_cnn_train4.pth"
 # CLASSIFIER_RNN_CKPT = "D:/ckpts/capstone/torch/classifier_rnn.pth"
-CLASSIFIER_RNN_CKPT = "../ai/ckpts/classifier3.pth"
-NUM_CLASSES = 4
+CLASSIFIER_RNN_CKPT = "../ai/ckpts/classifier4.pth"
+NUM_CLASSES = 3
 NUM_STEP = 8
 
 
