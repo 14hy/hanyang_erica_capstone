@@ -16,12 +16,12 @@
 #define CHANNEL 3
 #define SIZE (HEIGHT * WIDTH * CHANNEL)
 
-#define THRESHOLD 50
+#define THRESHOLD 100
 
 typedef cv::Point3_<uint8_t> Pixel;
 
 UsbCamera::UsbCamera(ros::NodeHandle& handle)
-	: nh(handle), stop(false), cap(NULL), wait(false)
+	: nh(handle), stop(false), cap(NULL), isReady(true)
 {
 
 }
@@ -37,6 +37,7 @@ void UsbCamera::init()
 		"image_data",
 		0
 	);
+	serv_server = nh.advertiseService("camera_ready", &UsbCamera::readyService, this);
 
 	cap = new cv::VideoCapture(0);
 
@@ -53,6 +54,7 @@ void UsbCamera::finalize()
 	stop = true;
 }
 
+/*
 void UsbCamera::resume()
 {
 	ROS_INFO("Usb camera node resumed.");
@@ -62,6 +64,20 @@ void UsbCamera::resume()
 bool UsbCamera::isWaiting()
 {
 	return wait;
+}
+*/
+
+bool UsbCamera::readyService(std_srvs::SetBool::Request& req,
+			     std_srvs::SetBool::Response& res)
+{
+	ROS_INFO("Camera Done");
+
+	if (req.data) {
+		res.success = true;
+		this->isReady = true;
+	}
+
+	return true;
 }
 
 void UsbCamera::compute()
@@ -75,11 +91,8 @@ void UsbCamera::compute()
 		return;
 	}
 
-	time_count += 1;
-
-	if (time_count != 1) return;
-
-	time_count = 0;
+	if (!this->isReady)
+		return;
 
 	cv::Mat frame;
 	cv::Mat bgrFrame;
@@ -90,13 +103,13 @@ void UsbCamera::compute()
 	cv::resize(frame, bgrFrame, cv::Size(HEIGHT, WIDTH));
 	//cv::cvtColor(temp, rgbFrame, cv::COLOR_BGRA2BGR);
 
-	if (!wait && (send_count > 0 || isValuableFrame(bgrFrame))) {
+	if (isReady && (send_count > 0 || isValuableFrame(bgrFrame))) {
 		//cv::cvtColor(bgrFrame, rgbFrame, CV_BGR2RGB);
 		publish(bgrFrame);
 		send_count += 1;
 		if (send_count == 8) {
 			send_count = 0;
-			time_count = -TIME_INTERVAL;
+			isReady = false;
 			//wait = true;
 		}
 		//wait = true;
@@ -116,11 +129,13 @@ void UsbCamera::publish(cv::Mat& frame)
 	pub.publish(msg);
 }
 
+/*
 void UsbCamera::waitForDone()
 {
 	ROS_INFO("Usb camera will be wait for done");
 	wait = true;
 }
+*/
 
 bool UsbCamera::isValuableFrame(cv::Mat& frame)
 {

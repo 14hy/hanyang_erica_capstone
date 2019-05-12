@@ -27,7 +27,7 @@ def test_image_data():
 
         print(y[i])
         img = x[i].numpy()
-        img = np.transpose(img, axes=(1, 2, 0))
+        img = np.transpose(img, axes=(1, 2, 0)) + 0.5
         print(img.max(), img.min())
         plt.imshow(img)
         plt.show()

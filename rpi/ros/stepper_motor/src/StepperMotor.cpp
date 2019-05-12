@@ -39,13 +39,26 @@ void StepperMotor::MotorCallback(const std_msgs::Int32MultiArray::ConstPtr& ptr)
 		ROS_INFO("Motor dir: %d", data[1]);
 		ROS_INFO("Motor step: %d", data[2]);
 
-		const MotorInfo* info;
-		if (data[0] == BOX_MOTOR)
-			info = &box_motor;
-		else if (data[0] == SUPPORT_MOTOR)
-			info = &support_motor;
+		if (data[0] == BOX_MOTOR) {
+			digitalWrite(BOX_MOTOR_ENABLE, HIGH);
+			GoStep(box_motor1, data[1], data[2]);
+			GoStep(box_motor2, data[1], data[2]);
 
-		GoStep(*info, data[1], data[2]);
+			while (!this->is_ready);
+			digitalWrite(BOX_MOTOR_ENABLE, LOW);
+		}
+		else if (data[0] == SUPPORT_MOTOR) {
+			digitalWrite(SUPPORT_MOTOR_ENABLE, HIGH);
+			GoStep(support_motor, data[1], data[2]);
+
+			while (!this->is_ready);
+			digitalWrite(SUPPORT_MOTOR_ENABLE, LOW);
+		}
+
+		std_srvs::SetBool request;
+		request.request.data = true;
+
+		this->serv_clnt.call(request);
 	}
 }
 
@@ -60,8 +73,6 @@ void StepperMotor::Step(class MotorInfo const& info, int steps)
 {
 	int motor_dir = info.motor_dir;
 	int motor_clk = info.motor_clk;
-
-	digitalWrite(MOTOR_ENABLE, HIGH);
 
 	if (steps > 0) {
 		digitalWrite(motor_dir, HIGH);
@@ -120,12 +131,5 @@ void StepperMotor::Step(class MotorInfo const& info, int steps)
 		}
 	}
 
-	digitalWrite(MOTOR_ENABLE, LOW);
-
 	this->is_ready = true;
-
-	std_srvs::SetBool request;
-	request.request.data = true;
-
-	this->serv_clnt.call(request);
 }

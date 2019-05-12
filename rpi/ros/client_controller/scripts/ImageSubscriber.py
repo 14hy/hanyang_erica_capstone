@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import cv2
 import numpy as np
 from std_msgs.msg import UInt8MultiArray
 
@@ -12,7 +13,7 @@ NUM_STEP = 8
 class ImageSubscriber():
 
     def __init__(self):
-        self.sub = rospy.Subscriber("image_data", UInt8MultiArray, self.image_callback, queue_size=8)
+        self.sub = rospy.Subscriber("image_data", UInt8MultiArray, self.image_callback, queue_size=None)
         self.image_data = []
         self.ready = True
         self.cnt = 0

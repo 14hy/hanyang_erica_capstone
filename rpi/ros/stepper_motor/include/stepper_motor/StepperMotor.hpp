@@ -28,11 +28,15 @@ private:
 
 	bool is_ready;
 
-	const MotorInfo box_motor = {
-		LEFT_MOTOR_CLK, LEFT_MOTOR_DIR
+	const MotorInfo box_motor1 = {
+		BOX_LEFT_MOTOR_CLK, BOX_LEFT_MOTOR_DIR
 	};
+	const MotorInfo box_motor2 = {
+		BOX_RIGHT_MOTOR_CLK, BOX_RIGHT_MOTOR_DIR
+	};
+
 	const MotorInfo support_motor = {
-		RIGHT_MOTOR_CLK, RIGHT_MOTOR_DIR
+		SUPPORT_MOTOR_CLK, SUPPORT_MOTOR_DIR
 	};
 
 	int initial_motor_clock = 3000; // more less,  more faster

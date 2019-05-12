@@ -43,5 +43,4 @@ class Client():
     def recv_result(self):
         data = self.serv_conn.recv(16)
         result = int(data.decode("utf-8"))
-        self.ready = True
         return result

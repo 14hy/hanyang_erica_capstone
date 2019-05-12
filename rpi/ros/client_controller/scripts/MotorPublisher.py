@@ -9,6 +9,7 @@ class MotorPublisher():
 
         self.pub = rospy.Publisher("motor", Int32MultiArray, queue_size=4)
         self.proxy = rospy.Service("motor_done", SetBool, self.motor_done)
+        self.cam_proxy = rospy.ServiceProxy("camera_ready", SetBool)
         self.ready = True
 
     def publish(self, motor_id, direction, step):
@@ -26,6 +27,10 @@ class MotorPublisher():
     def is_ready(self):
         return self.ready
         #return True
+
+    def cam_ready(self):
+        if self.ready:
+            self.cam_proxy(True)
 
     def motor_done(self, req):
         if req.data is True:
