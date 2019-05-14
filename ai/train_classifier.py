@@ -18,8 +18,6 @@ EPOCHS = 50
 DROP_RATE = 0.5
 NUM_CLASSES = 3
 
-# FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
-
 
 # def score(logps, labels):
 #     ps = torch.exp(logps)

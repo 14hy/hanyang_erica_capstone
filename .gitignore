@@ -1,4 +1,4 @@
-ai/ckpts
+ai/ckpts/*
 ai/__pycache__/
 ai/.vscode/
 ai/features/__pycache__/
