@@ -10,11 +10,11 @@ sys.path.append("../")
 
 from ai.prepare_data import rnn_data2, rnn_data, image_loader_trash
 
-TRASH_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata/train"
-TRASH_DATA_PATH2 = "D:/Users/jylee/Dropbox/Files/Datasets/capstonedata2/train"
-DETECTOR_DATA_PATH = "D:/Users/jylee/Dropbox/Files/Datasets/detector"
+TRASH_DATA_PATH = "data/trash1/train"
+TRASH_DATA_PATH2 = "data/trash2/train"
+DETECTOR_DATA_PATH = "data/detector/train"
 BATCH_SIZE = 32
-CKPT = "ckpts/classifier.pth"
+CKPT = "ckpts/classifier4.pth"
 
 
 def test_image_data():

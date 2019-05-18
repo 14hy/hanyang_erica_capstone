@@ -5,7 +5,7 @@ import torch
 from prepare_data import image_loader_trash
 from sklearn.decomposition import PCA
 
-FEATURE_CNN_CKPT = "ckpts/feature_cnn_train3.pth"
+FEATURE_CNN_CKPT = "ckpts/feature_cnn_train4.pth"
 DATA_PATH = "data/trash1/train"
 BATCH_SIZE = 500
 

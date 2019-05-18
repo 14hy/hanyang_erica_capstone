@@ -9,7 +9,7 @@ import cv2
 from PIL import Image, ImageChops
 import os
 
-NUM_CLASSES = 4
+NUM_CLASSES = 3
 NUM_STEP = 8
 TRAIN_PATH = "data/trash1/train"
 VALID_PATH = "data/trash1/valid"
@@ -67,7 +67,7 @@ def image_loader_trash(batch_size, train=True):
         path = VALID_PATH
 
     categories = [
-        "can", "extra", "glass", "plastic"
+        "can", "glass", "plastic"
     ]
 
     files = []
@@ -115,7 +115,7 @@ def image_loader_trash_total(batch_size):
     path = TOTAL_PATH
 
     categories = [
-        "can", "extra", "glass", "plastic"
+        "can", "glass", "plastic"
     ]
 
     files = []
@@ -230,7 +230,7 @@ def rnn_data2(batch_size, train=True):
     #path = TOTAL_PATH2
 
     categories = [
-        "can", "extra", "glass", "plastic"
+        "can", "glass", "plastic"
     ]
 
     lst = []
@@ -304,7 +304,7 @@ def rnn_data(batch_size, train=True):
             cnt = 0
             c = 0
 
-            while cnt < 4:
+            while cnt < NUM_CLASSES:
                 indices = np.arange(y_batch.size(0))
                 indices = indices[y_batch.numpy() == c]
                 x_batch_i = x_batch[indices]
@@ -317,11 +317,11 @@ def rnn_data(batch_size, train=True):
                 cnt += 1
                 c += 1
 
-                if c == 4:
+                if c == NUM_CLASSES:
                     c = 0
 
-            x = torch.stack(imgs, dim=0).view((batch_size * 4) // NUM_STEP, NUM_STEP, 3, 128, 128)
-            y = torch.stack(lbls, dim=0).view((batch_size * 4) // NUM_STEP,)
+            x = torch.stack(imgs, dim=0).view((batch_size * NUM_CLASSES) // NUM_STEP, NUM_STEP, 3, 128, 128)
+            y = torch.stack(lbls, dim=0).view((batch_size * NUM_CLASSES) // NUM_STEP,)
 
             yield x, y
 

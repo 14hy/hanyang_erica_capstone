@@ -11,14 +11,12 @@ from ai.prepare_data import rnn_data, rnn_data2
 from ai.Classifier import Classifier
 # from features.FeatureCNN import FeatureCNN
 
-CKPT = "ckpts/classifier3.pth"
+CKPT = "ckpts/classifier4.pth"
 ETA = 3e-4
 BATCH_SIZE = 64
-EPOCHS = 20
+EPOCHS = 50
 DROP_RATE = 0.5
-NUM_CLASSES = 4
-
-# FEATURE_CNN_CKPT = "D:/ckpts/capstone/torch/feature_cnn.pth"
+NUM_CLASSES = 3
 
 
 # def score(logps, labels):
@@ -116,7 +114,7 @@ def train_classifier():
 
     device = torch.device("cuda")
     clf = Classifier(NUM_CLASSES, drop_rate=DROP_RATE).to(device)
-    clf.load(CKPT)
+    # clf.load(CKPT)
 
     # if torch.cuda.device_count() > 1:
     #     model = nn.DataParallel(clf, device_ids=[0, 1], output_device=0).to(device)

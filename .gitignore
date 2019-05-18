@@ -1,8 +1,8 @@
-ai/ckpts
+ai/ckpts/*
 ai/__pycache__/
 ai/.vscode/
 ai/features/__pycache__/
-ai/server/__pycache__/
-ai/server/test/
+server/__pycache__/
+server/test/
 .vscode/
-ai/data/
+ai/data/*
