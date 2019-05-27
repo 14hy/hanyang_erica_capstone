@@ -49,8 +49,8 @@ void StepperMotor::MotorCallback(const std_msgs::Int32MultiArray::ConstPtr& ptr)
 		}
 		else if (data[0] == SUPPORT_MOTOR) {
 			digitalWrite(SUPPORT_MOTOR_ENABLE, HIGH);
-			GoStep(support_motor1, data[1], data[2]);
-			GoStep(support_motor2, 1-data[1], data[2]);
+			GoStep(support_motor1, 1-data[1], data[2]);
+			GoStep(support_motor2, data[1], data[2]);
 
 			while (!this->is_ready);
 			digitalWrite(SUPPORT_MOTOR_ENABLE, LOW);
