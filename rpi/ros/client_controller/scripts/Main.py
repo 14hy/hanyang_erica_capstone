@@ -8,9 +8,7 @@ import sys
 import threading as th
 import time
 
-HOST =  "35.194.238.193"
-#HOST = "34.80.12.180"
-#HOST = "192.168.137.1"
+HOST =  ""
 PORT = 13333
 NUM_STEP = 8
 
