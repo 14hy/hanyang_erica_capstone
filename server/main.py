@@ -6,7 +6,6 @@ import threading as th
 from Server import Server
 
 host = "0.0.0.0"
-#host = "192.168.137.1"
 port = 13333
 num_step = 8
 num_classes = 4
