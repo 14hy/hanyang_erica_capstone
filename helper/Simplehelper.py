@@ -4,7 +4,7 @@ import os
 
 ok = True
 
-data_path = "D:\\Users\\jylee\\Dropbox\\Files\\Datasets\\trashdata"
+data_path = "../ai/data/trashdata"
 # image_path = os.path.join(data_path, "images")
 # label_path = os.path.join(data_path, "labels")
 labels_dict = ["nothing", "plastic", "can", "glass", "extra"]
