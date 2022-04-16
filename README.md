@@ -5,6 +5,11 @@ Our project is about automaticly classifying which category a trash is in.
 We used 4 categories which are can, plastic, glass, and extra. But, in exhibition, we used only 3 categories whihout extra category.
 
 
+# Demo
+
+https://wayexists.notion.site/Capstone-Design-Project-00b40a81738d427d9d6b0d7e627b451b
+
+
 # Process
 
 I used ROS(Robot Operating System) for client system for raspberry pi.  
@@ -45,8 +50,3 @@ This module is run in raspberry pi. In ros folder, there are 3 module which are 
 ### server
 
 This module is run in GCP for opening server socket. This module have dependency on ai module.
-
-
-# Preview
-
-https://www.notion.so/wayexists/Capstone-Design-Project-00b40a81738d427d9d6b0d7e627b451b
